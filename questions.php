@@ -52,7 +52,7 @@
                                                 FROM questions q
                                            LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                                            LEFT JOIN question_types qt on qt.id = q.question_type_id
-                                               WHERE qn.id = 2
+                                               WHERE qn.id = (SELECT value FROM settings WHERE code = \'DEFAULT_QUESTIONNAIRE\')
                                             ORDER BY q.position ASC';
                             $questions_result = $mysqli->query($questions_sql);
 
