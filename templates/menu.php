@@ -1,4 +1,4 @@
 <ul>
     <li>News</li>
-    <li>Questions</li>
+    <li><a href="questions.php">Questions</a></li>
 </ul>
