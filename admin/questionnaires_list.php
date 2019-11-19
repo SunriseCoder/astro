@@ -28,12 +28,18 @@
                             $result = $mysqli->query($sql);
 
                             if ($result->num_rows > 0) {
-                                echo '<tr><th>ID</th><th>Name</th><th>Status</th></tr>';
+                                echo '<tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                      </tr>';
                                 while($row = $result->fetch_assoc()) {
                                     echo '<tr>';
                                     echo '<td>'.$row['id'].'</td>';
-                                    echo '<td><a href="questionnaire_edit.php?id='.$row['id'].'">'.$row['name'].'</a></td>';
+                                    echo '<td>'.$row['name'].'</td>';
                                     echo '<td>'.$row['is_active'].'</td>';
+                                    echo '<td><a href="questionnaire_edit.php?id='.$row['id'].'">Edit</a></td>';
                                     echo '</tr>';
                                 }
                             } else {

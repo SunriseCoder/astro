@@ -1,7 +1,7 @@
 <html>
     <?
         $browser_title = 'Chaitanya Academy - Questionnaires';
-        $page_title = 'Questionnaires - Administration';
+        $page_title = 'Questionnaire - Edit';
 
         include 'templates/metadata.php';
     ?>
@@ -28,14 +28,17 @@
                         $questions_by_questionnaire_sql =
                             'SELECT q.id as question_id,
                                     q.text as question_text,
+                                    q.position as question_position,
                                     qt.name as question_type
                                FROM questions q
                           LEFT JOIN question_types qt on qt.id = q.question_type_id
-                              WHERE questionnaire_id = ?';
+                              WHERE q.questionnaire_id = ?
+                           ORDER BY q.position ASC';
 
                         $all_questions_sql =
                             'SELECT q.id as question_id,
                                     q.text as question_text,
+                                    q.position as question_position,
                                     qt.name as question_type
                                FROM questions q
                           LEFT JOIN question_types qt on qt.id = q.question_type_id';
@@ -44,7 +47,8 @@
                             'SELECT id as question_option_id,
                                     question_id as question_id,
                                     text as question_option_text
-                               FROM question_options';
+                               FROM question_options
+                           ORDER BY position ASC';
 
                         include '../db.php';
 
@@ -77,39 +81,40 @@
                                 $questions_stmt->bind_param('i', $questionnaire_id);
                                 $questions_stmt->execute();
                                 $questions_result = $questions_stmt->get_result();
+
+                                // Parsing Questions for the Questionnaire
+                                if ($questions_result->num_rows > 0) {
+                                    echo '<table>';
+                                    echo '<tr>
+                                            <th>ID</th>
+                                            <th>Text</th>
+                                            <th>Options</th>
+                                            <th>Type</th>
+                                            <th>Position</th>
+                                            <th>Actions</th>
+                                          </tr>';
+
+                                    // Questions List
+                                    while($question_row = $questions_result->fetch_assoc()) {
+                                        echo '<tr>';
+                                        echo '<td>'.$question_row['question_id'].'</td>';
+                                        echo '<td>'.$question_row['question_text'].'</td>';
+                                        echo '<td>'.$question_options_map[$question_row['question_id']].'</td>';
+                                        echo '<td>'.$question_row['question_type'].'</td>';
+                                        echo '<td>'.$question_row['question_position'].'</td>';
+                                        echo '<td><a href="question_edit.php?id='.$question_row['question_id'].'">Edit</a></td>';
+                                        echo '</tr>';
+                                    }
+                                    echo '</table>';
+                                }
+                                echo $questions_result->num_rows.' question(s)<br />';
+                                echo '<a href="question_edit.php?questionnaire_id='.$questionnaire_id.'">Add New Question</a>';
                             } else {
                                 echo 'Questionnaire with ID '.$questionnaire_id.' is not found';
-                                $questions_result = $mysqli->query($all_questions_sql);
                             }
                         } else {
                             echo 'Questionnaire ID is not set';
-                            $questions_result = $mysqli->query($all_questions_sql);
                         }
-
-                        // Parsing Questions for the Questionnaire
-                        if ($questions_result->num_rows > 0) {
-                            echo '<table>';
-                            echo '<tr>
-                                    <th>ID</th>
-                                    <th>Text</th>
-                                    <th>Options</th>
-                                    <th>Type</th>
-                                  </tr>';
-
-                            // Questions List
-                            while($question_row = $questions_result->fetch_assoc()) {
-                                echo '<tr>';
-                                echo '<td>'.$question_row['question_id'].'</td>';
-                                echo '<td>'.$question_row['question_text'].'</td>';
-                                echo '<td>'.$question_options_map[$question_row['question_id']].'</td>';
-                                echo '<td>'.$question_row['question_type'].'</td>';
-                                echo '</tr>';
-                            }
-
-                            echo '</table>';
-                        }
-
-                        echo $questions_result->num_rows.' question(s)';
                     ?>
 
                     <? /* Body Area End */ ?>

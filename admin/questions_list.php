@@ -58,6 +58,7 @@
                                         <th>Options</th>
                                         <th>Type</th>
                                         <th>Questionnaire</th>
+                                        <th>Actions</th>
                                       </tr>';
                                 while($question_row = $questions_result->fetch_assoc()) {
                                     echo '<tr>';
@@ -66,6 +67,7 @@
                                     echo '<td>'.$question_options_map[$question_row['question_id']].'</td>';
                                     echo '<td>'.$question_row['question_type_name'].'</td>';
                                     echo '<td>'.$question_row['questionnaire_name'].'</td>';
+                                    echo '<td><a href="question_edit.php?id='.$question_row['question_id'].'">Edit</a></td>';
                                     echo '</tr>';
                                 }
                             } else {
