@@ -101,7 +101,7 @@
                                     }
                                     echo '</table>';
                                 }
-                                echo $questions_result->num_rows.' question(s)<br />';
+                                echo count($questions_result).' question(s)<br />';
                                 echo '<a href="question_edit.php?questionnaire_id='.$questionnaire_id.'">Add New Question</a>';
                             } else {
                                 echo 'Questionnaire with ID '.$questionnaire_id.' is not found';
