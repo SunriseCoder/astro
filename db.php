@@ -1,42 +1,83 @@
 <?php
-$servername = 'localhost';
-$username = 'root';
-$password = '';
-$dbname = 'astro';
 
-// Create connection
-$mysqli = new mysqli($servername, $username, $password, $dbname);
-// Check connection
-if (mysqli_connect_errno()) {
-    die("Connection failed: " . $mysqli->connect_error);
-}
+class Db {
+    private $servername = 'localhost';
+    private $username = 'root';
+    private $password = '';
+    private $dbname = 'questionnaire';
 
-/*
- * MySQL Usage Examples:
+    private $conn;
 
- * Execute Query
-    $result = $conn->query('SELECT id, firstname, lastname FROM users');
+    function connect() {
+        // Create connection
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
 
- * Prepared Statement
-    $stmt = $mysqli->prepare('INSERT INTO persons (id, name, department) VALUES (?, ?, ?)');
-    $stmt->bind_param('isi', $id, $name, $department);
-        i - corresponding variable has type integer
-        d - corresponding variable has type double
-        s - corresponding variable has type string
-        b - corresponding variable is a blob and will be sent in packets
-    $stmt->execute();
-    $result = $stmt->get_result();
-
- * Parse Result
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. "<br>";
+        // Check connection
+        if (mysqli_connect_errno()) {
+            die("Connection failed: " . $this->conn->connect_error);
         }
-    } else {
-        echo "0 results";
     }
 
- * Close Connection
-    $conn->close();
-*/
+    function query($sql) {
+        $result = $this->prepStmt($sql, NULL, NULL);
+        return $result;
+    }
+
+    /**
+     * Executes Prepared Statement
+     *
+     * @param string $sql - SQL Query
+     * @param string $types - types of variables, like 'isd' (integer, string, double)
+     * @param array $parameters - array of values to be bound with placehoders in SQL Query
+     * @return array of arrays - fetched data
+     */
+    function prepStmt($sql, $types, $parameters) {
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            die("Prepare Statement failed: " . $this->conn->connect_error);
+        }
+
+        if ($types != NULL) {
+            $bind_names[] = $types;
+            for ($i = 0; $i < count($parameters); $i++) {
+                $bind_name = 'bind' . $i;
+                $$bind_name = $parameters[$i];
+                $bind_names[] = &$$bind_name;
+            }
+            call_user_func_array(array($stmt,'bind_param'),$bind_names);
+        }
+
+        $status = $stmt->execute();
+        if (!$status) {
+            die("Execute Prepared Statement failed: " . $this->conn->connect_error);
+        }
+
+        $result = $this->fetchResult($stmt);
+        $stmt->close();
+
+        return $result;
+    }
+
+    function fetchResult($stmt) {
+        $meta = $stmt->result_metadata();
+        while ($field = $meta->fetch_field()) {
+            $params[] = &$row[$field->name];
+        }
+
+        call_user_func_array(array($stmt, 'bind_result'), $params);
+
+        while ($stmt->fetch()) {
+            foreach($row as $key => $val) {
+                $c[$key] = $val;
+            }
+            $result[] = $c;
+        }
+
+        return $result;
+    }
+}
+
+$db = new Db();
+$db->connect();
+
 ?>

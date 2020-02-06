@@ -34,14 +34,13 @@
                                         text as question_option_text
                                    FROM question_options';
 
-                            $question_options_result = $mysqli->query($question_options_sql);
-                            while($question_options_row = $question_options_result->fetch_assoc()) {
+                            $question_options_result = $db->query($question_options_sql);
+                            foreach ($question_options_result as $question_options_row) {
                                 $stored_value = $question_options_map[$question_options_row['question_id']];
                                 if (empty($stored_value)) {
                                     $stored_value = array();
                                 }
                                 array_push($stored_value, $question_options_row);
-                                //$stored_value = $stored_value.$question_options_row['question_option_text'];
                                 $question_options_map[$question_options_row['question_id']] = $stored_value;
                             }
 
@@ -54,15 +53,15 @@
                                            LEFT JOIN question_types qt on qt.id = q.question_type_id
                                                WHERE qn.id = (SELECT value FROM settings WHERE code = \'DEFAULT_QUESTIONNAIRE\')
                                             ORDER BY q.position ASC';
-                            $questions_result = $mysqli->query($questions_sql);
+                            $questions_result = $db->query($questions_sql);
 
-                            if ($questions_result->num_rows > 0) {
+                            if (count($questions_result) > 0) {
                                 echo '<tr>
                                         <th>#</th>
                                         <th>Text</th>
                                       </tr>';
                                 $counter = 1;
-                                while($question_row = $questions_result->fetch_assoc()) {
+                                foreach ($questions_result as $question_row) {
                                     echo '<tr>';
                                     echo '<td>'.$counter++.'</td>';
                                     echo '<td>'.$question_row['question_text'];
