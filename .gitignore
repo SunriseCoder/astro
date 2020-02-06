@@ -1,6 +1,10 @@
 /config.php 
 */.htaccess
 
+# Temporary data
+tmp/
+
 # Eclipse Files
 .buildpath
 .project
+.settings/
