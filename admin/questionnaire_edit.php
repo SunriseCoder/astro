@@ -19,6 +19,8 @@
                     <? /* Body Area Start */ ?>
 
                     <?
+                        include '../utils/db.php';
+
                         // Queries
                         $questionnaire_sql =
                             'SELECT id, name, is_active, is_locked
@@ -50,11 +52,9 @@
                                FROM question_options
                            ORDER BY position ASC';
 
-                        include '../db.php';
-
                         // Question Options Map
-                        $question_options_result = $mysqli->query($question_options_sql);
-                        while($question_options_row = $question_options_result->fetch_assoc()) {
+                        $question_options_result = $db->query($question_options_sql);
+                        foreach ($question_options_result as $question_options_row) {
                             $stored_value = $question_options_map[$question_options_row['question_id']];
                             if (!empty($stored_value)) {
                                 $stored_value = $stored_value.'<br />';
@@ -68,22 +68,16 @@
                             $questionnaire_id = $_GET['id'];
 
                             // Questionnaire
-                            $questionnaire_stmt = $mysqli->prepare($questionnaire_sql);
-                            $questionnaire_stmt->bind_param('i', $questionnaire_id);
-                            $questionnaire_stmt->execute();
-                            $questionnaire_result = $questionnaire_stmt->get_result();
+                            $questionnaire_result = $db->prepStmt($questionnaire_sql, 'i', [$questionnaire_id]);
 
-                            if ($questionnaire_result->num_rows == 1) {
-                                $questionnaire = $questionnaire_result->fetch_assoc();
+                            if (count($questionnaire_result) == 1) {
+                                $questionnaire = $questionnaire_result[0];
                                 echo '<div>'.$questionnaire['name'].':</div>';
 
-                                $questions_stmt = $mysqli->prepare($questions_by_questionnaire_sql);
-                                $questions_stmt->bind_param('i', $questionnaire_id);
-                                $questions_stmt->execute();
-                                $questions_result = $questions_stmt->get_result();
+                                $questions_result = $db->prepStmt($questions_by_questionnaire_sql, 'i', [$questionnaire_id]);
 
                                 // Parsing Questions for the Questionnaire
-                                if ($questions_result->num_rows > 0) {
+                                if (count($questions_result) > 0) {
                                     echo '<table>';
                                     echo '<tr>
                                             <th>ID</th>
@@ -95,7 +89,7 @@
                                           </tr>';
 
                                     // Questions List
-                                    while($question_row = $questions_result->fetch_assoc()) {
+                                    foreach ($questions_result as $question_row) {
                                         echo '<tr>';
                                         echo '<td>'.$question_row['question_id'].'</td>';
                                         echo '<td>'.$question_row['question_text'].'</td>';

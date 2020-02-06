@@ -19,7 +19,7 @@
                     <? /* Body Area Start */ ?>
 
                     <?
-                        include '../db.php';
+                        include '../utils/db.php';
                     ?>
 
                     <table>
@@ -31,8 +31,8 @@
                                         text as question_option_text
                                    FROM question_options';
 
-                            $question_options_result = $mysqli->query($question_options_sql);
-                            while($question_options_row = $question_options_result->fetch_assoc()) {
+                            $question_options_result = $db->query($question_options_sql);
+                            foreach ($question_options_result as $question_options_row) {
                                 $stored_value = $question_options_map[$question_options_row['question_id']];
                                 if (!empty($stored_value)) {
                                     $stored_value = $stored_value.'<br />';
@@ -49,9 +49,9 @@
                                            FROM questions q
                                       LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                                       LEFT JOIN question_types qt on qt.id = q.question_type_id ';
-                            $questions_result = $mysqli->query($questions_sql);
+                            $questions_result = $db->query($questions_sql);
 
-                            if ($questions_result->num_rows > 0) {
+                            if (count($questions_result) > 0) {
                                 echo '<tr>
                                         <th>ID</th>
                                         <th>Text</th>
@@ -60,7 +60,7 @@
                                         <th>Questionnaire</th>
                                         <th>Actions</th>
                                       </tr>';
-                                while($question_row = $questions_result->fetch_assoc()) {
+                                foreach ($questions_result as $question_row) {
                                     echo '<tr>';
                                     echo '<td>'.$question_row['question_id'].'</td>';
                                     echo '<td>'.$question_row['question_text'].'</td>';

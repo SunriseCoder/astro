@@ -22,7 +22,7 @@
                     <div>Could You please answer some questions anonymously?</div>
 
                     <?
-                        include 'db.php';
+                        include 'utils/db.php';
                     ?>
 
                     <table>

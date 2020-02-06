@@ -4,7 +4,7 @@ class Db {
     private $servername = 'localhost';
     private $username = 'root';
     private $password = '';
-    private $dbname = 'questionnaire';
+    private $dbname = 'astro';
 
     private $conn;
 
@@ -58,7 +58,11 @@ class Db {
         return $result;
     }
 
-    function fetchResult($stmt) {
+    private function fetchResult($stmt) {
+        if (!$stmt->result_metadata()) {
+            return NULL;
+        }
+
         $meta = $stmt->result_metadata();
         while ($field = $meta->fetch_field()) {
             $params[] = &$row[$field->name];
@@ -74,6 +78,10 @@ class Db {
         }
 
         return $result;
+    }
+
+    function insertedId() {
+        return $this->conn->insert_id;
     }
 }
 

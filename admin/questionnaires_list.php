@@ -19,22 +19,22 @@
                     <? /* Body Area Start */ ?>
 
                     <?
-                        include '../db.php';
+                        include '../utils/db.php';
                     ?>
 
                     <table>
                         <?
                             $sql = "SELECT id, name, is_active FROM questionnaires";
-                            $result = $mysqli->query($sql);
+                            $result = $db->query($sql);
 
-                            if ($result->num_rows > 0) {
+                            if (count($result) > 0) {
                                 echo '<tr>
                                         <th>ID</th>
                                         <th>Name</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                       </tr>';
-                                while($row = $result->fetch_assoc()) {
+                                foreach ($result as $row) {
                                     echo '<tr>';
                                     echo '<td>'.$row['id'].'</td>';
                                     echo '<td>'.$row['name'].'</td>';

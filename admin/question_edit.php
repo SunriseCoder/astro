@@ -21,7 +21,7 @@
                     <? /* Body Area Start */ ?>
 
                     <?
-                        include '../db.php';
+                        include '../utils/db.php';
 
                         // Save Question after Edit
                         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -35,19 +35,17 @@
                                             text = ?
                                       WHERE id = ?';
 
-                                $save_question_stmt = $mysqli->prepare($question_update_sql);
-                                $save_question_stmt->bind_param('iisi', $_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_text'], $question_id);
-                                $save_question_stmt->execute();
+                                $db->prepStmt($question_update_sql, 'iisi',
+                                    [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_text'], $question_id]);
                             } else {
                                 // Insert New Question
                                 $question_insert_sql =
                                     'INSERT INTO questions (questionnaire_id, question_type_id, position, text) VALUES (?, ?, ?, ?)';
 
-                                $save_question_stmt = $mysqli->prepare($question_insert_sql);
                                 $position = 0;
-                                $save_question_stmt->bind_param('iiis', $_POST['questionnaire_id'], $_POST['question_type_id'], $position, $_POST['question_text']);
-                                $save_question_stmt->execute();
-                                $question_id = $mysqli->insert_id;
+                                $db->prepStmt($question_insert_sql, 'iiis',
+                                    [$_POST['questionnaire_id'], $_POST['question_type_id'], $position, $_POST['question_text']]);
+                                $question_id = $db->insertedId();
                             }
 
                             if (isset($_POST['question_options'])) {
@@ -68,19 +66,16 @@
                                                 SET text = ?,
                                                     position = ?
                                               WHERE id = ?';
-                                        $save_question_stmt = $mysqli->prepare($question_option_update_sql);
-                                        $save_question_stmt->bind_param('sii', $question_option['text'], $question_options_position, $question_option['id']);
-                                        $save_question_stmt->execute();
+                                        $db->prepStmt($question_option_update_sql, 'sii',
+                                            [$question_option['text'], $question_options_position, $question_option['id']]);
                                         array_push($survival_ids, $question_option['id']);
                                     } else {
                                         // Insert new Question Options
                                         $question_option_insert_sql =
                                             'INSERT INTO question_options (question_id, position, text)
                                                   VALUES (?, ?, ?)';
-                                        $save_question_stmt = $mysqli->prepare($question_option_insert_sql);
-                                        $save_question_stmt->bind_param('iis', $question_id, $question_options_position, $question_option['text']);
-                                        $save_question_stmt->execute();
-                                        $last_id = $mysqli->insert_id;
+                                        $db->prepStmt($question_option_insert_sql, 'iis', [$question_id, $question_options_position, $question_option['text']]);
+                                        $last_id = $db->insertedId();
                                         array_push($survival_ids, $last_id);
                                     }
                                     $question_options_position += 10;
@@ -91,19 +86,14 @@
                                     'SELECT id
                                        FROM question_options
                                       WHERE question_id = ?';
-                                $select_question_options_stmt = $mysqli->prepare($question_options_select_sql);
-                                $select_question_options_stmt->bind_param('i', $question_id);
-                                $select_question_options_stmt->execute();
-                                $question_options_result = $select_question_options_stmt->get_result();
-                                while($question_options_row = $question_options_result->fetch_assoc()) {
+                                $question_options_result = $db->prepStmt($question_options_select_sql, 'i', [$question_id]);
+                                foreach ($question_options_result as $question_options_row) {
                                     $question_option_id = $question_options_row['id'];
                                     if (!in_array($question_option_id, $survival_ids)) {
                                         $question_options_delete_sql =
                                             'DELETE FROM question_options
                                                    WHERE id = ?';
-                                        $save_question_stmt = $mysqli->prepare($question_options_delete_sql);
-                                        $save_question_stmt->bind_param('i', $question_option_id);
-                                        $save_question_stmt->execute();
+                                        $db->prepStmt($question_options_delete_sql, 'i', [$question_option_id]);
                                     }
                                 }
                             } else {
@@ -111,9 +101,7 @@
                                 $question_options_delete_sql =
                                     'DELETE FROM question_options
                                            WHERE question_id = ?';
-                                $delete_question_options_stmt = $mysqli->prepare($question_options_delete_sql);
-                                $delete_question_options_stmt->bind_param('i', $question_id);
-                                $delete_question_options_stmt->execute();
+                                $db->prepStmt($question_options_delete_sql, 'i', [$question_id]);
                             }
                         }
 
@@ -149,13 +137,9 @@
                         // Parsing Question by given ID
                         if (isset($question_id)) {
                             // Question
-                            $question_stmt = $mysqli->prepare($question_sql);
-                            $question_stmt->bind_param('i', $question_id);
-                            $question_stmt->execute();
-                            $question_result = $question_stmt->get_result();
-
-                            if ($question_result->num_rows == 1) {
-                                $question_row = $question_result->fetch_assoc();
+                            $question_result = $db->prepStmt($question_sql, 'i', [$question_id]);
+                            if (count($question_result) == 1) {
+                                $question_row = $question_result[0];
                             } else {
                                 echo 'Question with ID '.$question_id.' is not found';
                             }
@@ -191,8 +175,8 @@
                         if (isset($question_row['questionnaire_id'])) {
                             $questionnaire_id = $question_row['questionnaire_id'];
                         }
-                        $questionnaires_result = $mysqli->query($questionnaires_sql);
-                        while($questionnaire_row = $questionnaires_result->fetch_assoc()) {
+                        $questionnaires_result = $db->query($questionnaires_sql);
+                        foreach ($questionnaires_result as $questionnaire_row) {
                             echo '<option value="'.$questionnaire_row['id'].'"';
                             if ($questionnaire_id == $questionnaire_row['id']) {
                                 echo ' selected="selected"';
@@ -204,8 +188,8 @@
                         // Question Type
                         echo '<tr><td>Question Type</td><td>';
                         echo '<select id="question_type_select" name="question_type_id" onchange="questionTypeChanged()">';
-                        $question_types_result = $mysqli->query($question_types_sql);
-                        while($question_type_row = $question_types_result->fetch_assoc()) {
+                        $question_types_result = $db->query($question_types_sql);
+                        foreach ($question_types_result as $question_type_row) {
                             echo '<option question_type_code="'.$question_type_row['code'].'" value="'.$question_type_row['id'].'"';
                             if ($question_row['question_type_id'] == $question_type_row['id']) {
                                 echo ' selected="selected"';
@@ -227,14 +211,11 @@
                         // Question Options
                         $question_type = $question_row['question_type_code'];
                         if ($question_type == 'SINGLE_CHOICE') {
-                            $question_options_stmt = $mysqli->prepare($question_options_sql);
-                            $question_options_stmt->bind_param('i', $question_id);
-                            $question_options_stmt->execute();
-                            $question_options_result = $question_options_stmt->get_result();
+                            $question_options_result = $db->prepStmt($question_options_sql, 'i', [$question_id]);
 
                             // Questions List
                             $question_options_counter = 0;
-                            while($question_options_row = $question_options_result->fetch_assoc()) {
+                            foreach ($question_options_result as $question_options_row) {
                                 echo '<tr row_number="'.$question_options_counter.'">';
 
                                 // Question Option ID

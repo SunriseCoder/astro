@@ -19,7 +19,7 @@
                     <? /* Body Area Start */ ?>
 
                     <?
-                        include '../db.php';
+                        include '../utils/db.php';
                     ?>
 
                     <table>
@@ -30,15 +30,15 @@
                                          qt.name as name
                                     FROM question_types qt';
 
-                            $result = $mysqli->query($sql);
+                            $result = $db->query($sql);
 
-                            if ($result->num_rows > 0) {
+                            if (count($result) > 0) {
                                 echo '<tr>
                                         <th>ID</th>
                                         <th>Code</th>
                                         <th>Name</th>
                                       </tr>';
-                                while($row = $result->fetch_assoc()) {
+                                foreach ($result as $row) {
                                     echo '<tr>';
                                     echo '<td>'.$row['id'].'</td>';
                                     echo '<td>'.$row['code'].'</td>';
