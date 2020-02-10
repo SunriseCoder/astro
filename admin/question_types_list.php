@@ -3,25 +3,24 @@
         $browser_title = 'Chaitanya Academy - Question Types';
         $page_title = 'Question Types - Administration';
 
-        include 'templates/metadata.php';
+        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
     ?>
 
     <body>
         <table>
             <tr>
-                <td colspan="2"><? include '../templates/page_top.php'; ?></td>
+                <td colspan="2">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
+                </td>
             </tr>
             <tr>
-                <td class="menu"><? include 'templates/menu.php'; ?></td>
+                <td class="menu">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?>
+                </td>
                 <td>
-                    <? include '../templates/body_top.php'; ?>
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
 
                     <? /* Body Area Start */ ?>
-
-                    <?
-                        include '../utils/db.php';
-                    ?>
-
                     <table>
                         <?
                             $sql =
@@ -29,9 +28,7 @@
                                          qt.code as code,
                                          qt.name as name
                                     FROM question_types qt';
-
-                            $result = $db->query($sql);
-
+                            $result = Db::query($sql);
                             if (count($result) > 0) {
                                 echo '<tr>
                                         <th>ID</th>
@@ -56,7 +53,9 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2"><? include '../templates/page_footer.php'; ?></td>
+                <td colspan="2">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
+                </td>
             </tr>
         </table>
     </body>

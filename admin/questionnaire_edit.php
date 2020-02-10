@@ -3,24 +3,26 @@
         $browser_title = 'Chaitanya Academy - Questionnaires';
         $page_title = 'Questionnaire - Edit';
 
-        include 'templates/metadata.php';
+        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
     ?>
 
     <body>
         <table>
             <tr>
-                <td colspan="2"><? include '../templates/page_top.php'; ?></td>
+                <td colspan="2">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
+                </td>
             </tr>
             <tr>
-                <td class="menu"><? include 'templates/menu.php'; ?></td>
+                <td class="menu">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?>
+                </td>
                 <td>
-                    <? include '../templates/body_top.php'; ?>
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
 
                     <? /* Body Area Start */ ?>
 
                     <?
-                        include '../utils/db.php';
-
                         // Queries
                         $questionnaire_sql =
                             'SELECT id, name, is_active, is_locked
@@ -53,7 +55,7 @@
                            ORDER BY position ASC';
 
                         // Question Options Map
-                        $question_options_result = $db->query($question_options_sql);
+                        $question_options_result = Db::query($question_options_sql);
                         foreach ($question_options_result as $question_options_row) {
                             $stored_value = $question_options_map[$question_options_row['question_id']];
                             if (!empty($stored_value)) {
@@ -68,15 +70,13 @@
                             $questionnaire_id = $_GET['id'];
 
                             // Questionnaire
-                            $questionnaire_result = $db->prepStmt($questionnaire_sql, 'i', [$questionnaire_id]);
-
+                            $questionnaire_result = Db::prepQuery($questionnaire_sql, 'i', [$questionnaire_id]);
                             if (count($questionnaire_result) == 1) {
                                 $questionnaire = $questionnaire_result[0];
                                 echo '<div>'.$questionnaire['name'].':</div>';
 
-                                $questions_result = $db->prepStmt($questions_by_questionnaire_sql, 'i', [$questionnaire_id]);
-
                                 // Parsing Questions for the Questionnaire
+                                $questions_result = Db::prepQuery($questions_by_questionnaire_sql, 'i', [$questionnaire_id]);
                                 if (count($questions_result) > 0) {
                                     echo '<table>';
                                     echo '<tr>
@@ -116,7 +116,9 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2"><? include '../templates/page_footer.php'; ?></td>
+                <td colspan="2">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
+                </td>
             </tr>
         </table>
     </body>

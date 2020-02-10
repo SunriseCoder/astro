@@ -3,18 +3,22 @@
         $browser_title = 'Chaitanya Academy - Astrology';
         $page_title = 'Astrology - Administration';
 
-        include 'templates/metadata.php';
+        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
     ?>
 
     <body>
         <table>
             <tr>
-                <td colspan="2"><? include '../templates/page_top.php'; ?></td>
+                <td colspan="2">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
+                </td>
             </tr>
             <tr>
-                <td class="menu"><? include 'templates/menu.php'; ?></td>
+                <td class="menu">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?>
+                </td>
                 <td>
-                    <? include '../templates/body_top.php'; ?>
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
 
                     <? /* Body Area Start */ ?>
 
@@ -27,7 +31,9 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2"><? include '../templates/page_footer.php'; ?></td>
+                <td colspan="2">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
+                </td>
             </tr>
         </table>
     </body>

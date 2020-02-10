@@ -1,3 +1,7 @@
 <div class="header">
-    <? print $page_title ?>
+    <?php
+        print $page_title;
+    ?><br />
+    <br />
+    <?php include $_SERVER["DOCUMENT_ROOT"].'/templates/login.php'; ?>
 </div>

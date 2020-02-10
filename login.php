@@ -1,3 +1,24 @@
+<?php
+    include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php';
+
+    if (LoginDao::isLogged()) {
+        header("Location: /", true);
+        exit;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['email']) && isset($_POST['password'])) {
+            $email = $_POST['email'];
+            $pass = $_POST['password'];
+            $error = LoginDao::login($email, $pass);
+            if (!$error) {
+                header("Location: /", true);
+                exit;
+            }
+        }
+    }
+?>
+
 <html>
     <?
         $browser_title = 'Chaitanya Academy - Astrology';
@@ -5,7 +26,6 @@
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
     ?>
-
     <body>
         <table>
             <tr>
@@ -22,9 +42,10 @@
 
                     <? /* Body Area Start */ ?>
 
-                    Hello!<br />
-                    Here will be a very big project...<br />
-                    Very soon...<br />
+                    <?php
+                        echo '<font color="red">'.$error.'</font><br /><br />';
+                        include $_SERVER["DOCUMENT_ROOT"].'/templates/login.php';
+                    ?>
 
                     <? /* Body Area End */ ?>
 

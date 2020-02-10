@@ -5,24 +5,25 @@
 
         $js_includes = array('js/question_edit.js');
 
-        include 'templates/metadata.php';
+        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
     ?>
 
     <body>
         <table>
             <tr>
-                <td colspan="2"><? include '../templates/page_top.php'; ?></td>
+                <td colspan="2">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?></td>
             </tr>
             <tr>
-                <td class="menu"><? include 'templates/menu.php'; ?></td>
+                <td class="menu">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?>
+                </td>
                 <td>
-                    <? include '../templates/body_top.php'; ?>
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
 
                     <? /* Body Area Start */ ?>
 
                     <?
-                        include '../utils/db.php';
-
                         // Save Question after Edit
                         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (isset($_POST['question_id'])) {
@@ -34,8 +35,7 @@
                                             question_type_id = ?,
                                             text = ?
                                       WHERE id = ?';
-
-                                $db->prepStmt($question_update_sql, 'iisi',
+                                Db::prepStmt($question_update_sql, 'iisi',
                                     [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_text'], $question_id]);
                             } else {
                                 // Insert New Question
@@ -43,9 +43,9 @@
                                     'INSERT INTO questions (questionnaire_id, question_type_id, position, text) VALUES (?, ?, ?, ?)';
 
                                 $position = 0;
-                                $db->prepStmt($question_insert_sql, 'iiis',
+                                Db::prepStmt($question_insert_sql, 'iiis',
                                     [$_POST['questionnaire_id'], $_POST['question_type_id'], $position, $_POST['question_text']]);
-                                $question_id = $db->insertedId();
+                                $question_id = Db::insertedId();
                             }
 
                             if (isset($_POST['question_options'])) {
@@ -66,7 +66,7 @@
                                                 SET text = ?,
                                                     position = ?
                                               WHERE id = ?';
-                                        $db->prepStmt($question_option_update_sql, 'sii',
+                                        Db::prepStmt($question_option_update_sql, 'sii',
                                             [$question_option['text'], $question_options_position, $question_option['id']]);
                                         array_push($survival_ids, $question_option['id']);
                                     } else {
@@ -74,8 +74,8 @@
                                         $question_option_insert_sql =
                                             'INSERT INTO question_options (question_id, position, text)
                                                   VALUES (?, ?, ?)';
-                                        $db->prepStmt($question_option_insert_sql, 'iis', [$question_id, $question_options_position, $question_option['text']]);
-                                        $last_id = $db->insertedId();
+                                        Db::prepStmt($question_option_insert_sql, 'iis', [$question_id, $question_options_position, $question_option['text']]);
+                                        $last_id = Db::insertedId();
                                         array_push($survival_ids, $last_id);
                                     }
                                     $question_options_position += 10;
@@ -86,14 +86,14 @@
                                     'SELECT id
                                        FROM question_options
                                       WHERE question_id = ?';
-                                $question_options_result = $db->prepStmt($question_options_select_sql, 'i', [$question_id]);
+                                $question_options_result = Db::prepQuery($question_options_select_sql, 'i', [$question_id]);
                                 foreach ($question_options_result as $question_options_row) {
                                     $question_option_id = $question_options_row['id'];
                                     if (!in_array($question_option_id, $survival_ids)) {
                                         $question_options_delete_sql =
                                             'DELETE FROM question_options
                                                    WHERE id = ?';
-                                        $db->prepStmt($question_options_delete_sql, 'i', [$question_option_id]);
+                                        Db::prepStmt($question_options_delete_sql, 'i', [$question_option_id]);
                                     }
                                 }
                             } else {
@@ -101,7 +101,7 @@
                                 $question_options_delete_sql =
                                     'DELETE FROM question_options
                                            WHERE question_id = ?';
-                                $db->prepStmt($question_options_delete_sql, 'i', [$question_id]);
+                                Db::prepStmt($question_options_delete_sql, 'i', [$question_id]);
                             }
                         }
 
@@ -137,7 +137,7 @@
                         // Parsing Question by given ID
                         if (isset($question_id)) {
                             // Question
-                            $question_result = $db->prepStmt($question_sql, 'i', [$question_id]);
+                            $question_result = Db::prepQuery($question_sql, 'i', [$question_id]);
                             if (count($question_result) == 1) {
                                 $question_row = $question_result[0];
                             } else {
@@ -175,7 +175,7 @@
                         if (isset($question_row['questionnaire_id'])) {
                             $questionnaire_id = $question_row['questionnaire_id'];
                         }
-                        $questionnaires_result = $db->query($questionnaires_sql);
+                        $questionnaires_result = Db::query($questionnaires_sql);
                         foreach ($questionnaires_result as $questionnaire_row) {
                             echo '<option value="'.$questionnaire_row['id'].'"';
                             if ($questionnaire_id == $questionnaire_row['id']) {
@@ -188,7 +188,7 @@
                         // Question Type
                         echo '<tr><td>Question Type</td><td>';
                         echo '<select id="question_type_select" name="question_type_id" onchange="questionTypeChanged()">';
-                        $question_types_result = $db->query($question_types_sql);
+                        $question_types_result = Db::query($question_types_sql);
                         foreach ($question_types_result as $question_type_row) {
                             echo '<option question_type_code="'.$question_type_row['code'].'" value="'.$question_type_row['id'].'"';
                             if ($question_row['question_type_id'] == $question_type_row['id']) {
@@ -211,7 +211,7 @@
                         // Question Options
                         $question_type = $question_row['question_type_code'];
                         if ($question_type == 'SINGLE_CHOICE') {
-                            $question_options_result = $db->prepStmt($question_options_sql, 'i', [$question_id]);
+                            $question_options_result = Db::prepQuery($question_options_sql, 'i', [$question_id]);
 
                             // Questions List
                             $question_options_counter = 0;
@@ -250,7 +250,9 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2"><? include '../templates/page_footer.php'; ?></td>
+                <td colspan="2">
+                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
+                </td>
             </tr>
         </table>
     </body>
