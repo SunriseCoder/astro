@@ -1,12 +1,9 @@
 <?php
 
+include $_SERVER["DOCUMENT_ROOT"].'/utils/config.php';
+
 class Db {
     const DEBUG_MODE = true;
-
-    private static $servername = 'localhost';
-    private static $username = 'root';
-    private static $password = '';
-    private static $dbname = 'astro';
 
     public static $conn;
 
@@ -17,7 +14,7 @@ class Db {
         }
 
         // Create connection
-        self::$conn = new mysqli(self::$servername, self::$username, self::$password, self::$dbname);
+        self::$conn = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
 
         // Check connection
         if (self::$conn->connect_errno) {
