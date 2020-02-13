@@ -4,6 +4,10 @@ if (!class_exists('Db')) {
     include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php';
 }
 
+if (!class_exists('Utils')) {
+    include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php';
+}
+
 class Permission {
     // Administration
     const AdminMenuVisible = 'AdminMenuVisible';
@@ -81,8 +85,8 @@ class User {
     public $active;
 
     public function generatePassword() {
-        // TODO Implement real password generator
-        $this->pass = '123';
+        $password = Utils::generateRandomString(12);
+        $this->pass = $password;
     }
 
     public function hasPermission($permission) {
@@ -101,17 +105,35 @@ class User {
 }
 
 class UserDao {
+    public static function isNameFree($name) {
+        $sql = 'SELECT count(1) as c FROM users WHERE name = ?';
+        $users = Db::prepQuery($sql, 's', [$name]);
+        $result = $users[0]['c'] == 0;
+        return $result;
+    }
+
     public static function isEmailFree($email) {
-        $sql = 'SELECT 1 FROM users WHERE email = ?';
-        $users = Db::prepStmt($sql, 's', [$email]);
-        $result = count($users) == 0;
+        $sql = 'SELECT count(1) as c FROM users WHERE email = ?';
+        $users = Db::prepQuery($sql, 's', [$email]);
+        $result = $users[0]['c'] == 0;
         return $result;
     }
 
     public static function create($user) {
-        $sql = 'INSERT INTO users (email, pass, active) VALUES (?, ?, true)';
-        // TODO Encrypt Password before saving to Database
-        Db::prepStmt($sql, 'ss', [$user->email, $user->pass]);
+        $sql = 'INSERT INTO users (name, email, pass, active) VALUES (?, ?, ?, true)';
+        $password = $user->pass;
+        // Encrypting Password before saving to Database
+        // TODO Maybe add some salt or make it more secure
+        $encryptedPass = md5($password);
+        $result = Db::prepStmt($sql, 'sss', [$user->name, $user->email, $encryptedPass]);
+        if ($result) {
+            // TODO Send real password after test
+            $result = Email::sendPassword($user->email, $password);
+        } else if (Db::DEBUG_MODE) {
+            echo 'Error due to insert User into the Database.';
+        }
+
+        return $result;
     }
 
     public static function getUserById($user_id) {
@@ -125,6 +147,7 @@ class UserDao {
         $userRs = $usersRs[0];
         $user = new User();
         $user->id = $userRs['id'];
+        $user->name = $userRs['name'];
         $user->email = $userRs['email'];
         $user->pass = $userRs['pass'];
         $user->active = $userRs['active'];
@@ -162,7 +185,7 @@ class LoginSession {
     public $expiration;
 
     public function isExpired() {
-        $now = new DateTime();
+        $now = DateTimeUtils::now();
         $expired = $now > $this->expiration;
         return $expired;
     }
@@ -239,8 +262,10 @@ class LoginDao {
         }
 
         // Checking Password
-        // TODO Make real Password Check according to encryption
-        if ($user->pass != $pass) {
+        $stored = strtolower($user->pass);
+        // TODO Change here if the Salt or something else will be added
+        $actual = strtolower(md5($pass));
+        if ($stored != $actual) {
             return 'Error: Password is incorrect';
         }
 
@@ -251,11 +276,11 @@ class LoginDao {
         $session->user_id = $user->id;
         $session->user_ip = self::clientIP();
 
-        $now = new DateTime();
+        $now = DateTimeUtils::now();
         $session->cookie_code = uniqid($now->format('Ymd-His-'), true);
 
         $expiration = $now->add(new DateInterval('P365D')); // +365 Days
-        $session->expiration = $expiration->format("Y-m-d H:i:s");
+        $session->expiration = DateTimeUtils::toDatabase($expiration);
         self::insertNewSession($session);
 
         // Set Login Cookies
@@ -279,7 +304,7 @@ class LoginDao {
         $session->user_id = $sessionResult['user_id'];
         $session->user_ip = $sessionResult['user_ip'];
         $session->cookie_code = $sessionResult['cookie_code'];
-        $session->expiration = DateTime::createFromFormat("Y-m-d H:i:s", $sessionResult['expiration']);
+        $session->expiration = DateTimeUtils::fromDatabase($sessionResult['expiration']);
 
         return $session;
     }
@@ -298,7 +323,7 @@ class LoginDao {
         return $result;
     }
 
-    private static function clientIP() {
+    public static function clientIP() {
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             $ip = $_SERVER['HTTP_CLIENT_IP'];
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -316,7 +341,7 @@ class LoginDao {
         return $uuid;
     }
 
-    public static function  isLogged() {
+    public static function isLogged() {
         $logged = self::$currentUser != NULL;
         return $logged;
     }

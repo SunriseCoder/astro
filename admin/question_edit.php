@@ -24,6 +24,7 @@
                     <? /* Body Area Start */ ?>
 
                     <?
+                        include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php';
                         // Save Question after Edit
                         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (isset($_POST['question_id'])) {
@@ -33,18 +34,22 @@
                                     'UPDATE questions
                                         SET questionnaire_id = ?,
                                             question_type_id = ?,
-                                            text = ?
+                                            number = ?,
+                                            text = ?,
+                                            position = ?
                                       WHERE id = ?';
-                                Db::prepStmt($question_update_sql, 'iisi',
-                                    [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_text'], $question_id]);
+                                Db::prepStmt($question_update_sql, 'iissii',
+                                    [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_number'],
+                                        $_POST['question_text'], $_POST['question_position'], $question_id]);
                             } else {
                                 // Insert New Question
                                 $question_insert_sql =
-                                    'INSERT INTO questions (questionnaire_id, question_type_id, position, text) VALUES (?, ?, ?, ?)';
+                                    'INSERT INTO questions (questionnaire_id, question_type_id, number, position, text) VALUES (?, ?, ?, ?, ?)';
 
-                                $position = 0;
-                                Db::prepStmt($question_insert_sql, 'iiis',
-                                    [$_POST['questionnaire_id'], $_POST['question_type_id'], $position, $_POST['question_text']]);
+                                $position = 10 * QuestionnaireDao::countQuestions($_POST['questionnaire_id']);
+                                Db::prepStmt($question_insert_sql, 'iisis',
+                                    [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_number'],
+                                        $position, $_POST['question_text']]);
                                 $question_id = Db::insertedId();
                             }
 
@@ -114,7 +119,9 @@
 
                         $question_sql =
                             'SELECT q.id as question_id,
+                                    q.number as question_number,
                                     q.text as question_text,
+                                    q.position as question_position,
                                     q.questionnaire_id as questionnaire_id,
                                     q.question_type_id as question_type_id,
                                     qt.code as question_type_code
@@ -164,8 +171,14 @@
                         }
                         echo '</td></tr>';
 
+                        // Question Number
+                        echo '<tr><td>Question Number</td><td><input type="text" name="question_number" size="50" value="'.$question_row['question_number'].'" /></td></tr>';
+
                         // Question Text
-                        echo '<tr><td>Question Text</td><td><input type="text" name="question_text" size="50" value="'.$question_row['question_text'].'" /></td></tr>';
+                        echo '<tr><td>Question Text</td><td><textarea name="question_text" rows="20" cols="100">'.$question_row['question_text'].'</textarea></td></tr>';
+
+                        // Question Number
+                        echo '<tr><td>Position in Questionnaire</td><td><input type="text" name="question_position" size="50" value="'.$question_row['question_position'].'" /></td></tr>';
 
                         // Questionnaire Field
                         echo '<tr><td>Questionnaire</td><td><select name="questionnaire_id">';

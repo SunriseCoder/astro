@@ -17,6 +17,7 @@ table {
 
 .menu {
     width: 120pt;
+    vertical-align: top;
 }
 
 .page_footer {

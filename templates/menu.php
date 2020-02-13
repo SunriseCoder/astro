@@ -8,6 +8,8 @@
             echo "<li><a href=\"admin/\">Admin</a></li>";
         }
 
-        echo "<li><a href=\"questions.php\">Questions</a></li>";
+        if ($user) {
+            echo "<li><a href=\"questions.php\">Survey</a></li>";
+        }
     ?>
 </ul>

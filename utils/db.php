@@ -27,6 +27,56 @@ class Db {
         }
     }
 
+    public static function autocommit($mode) {
+        $result = self::$conn->autocommit($mode);
+        if (!$result) {
+            echo 'Failed to set autocommit mode: '.$mode;
+            if (self::DEBUG_MODE) {
+                debug_print_backtrace();
+            }
+        }
+        return $result;
+    }
+
+    public static function beginTransaction($flags = null, $name = null) {
+        $result = self::$conn->begin_transaction($flags, $name);
+        if (!$result) {
+            echo 'Failed to set begin Transaction';
+            if (self::DEBUG_MODE) {
+                debug_print_backtrace();
+            }
+        }
+        return $result;
+    }
+
+    public static function commit(int $flags = null, $name = null) {
+        $result = self::$conn->commit($flags, $name);
+        if (!$result) {
+            echo 'Failed to set commit transaction';
+            if (self::DEBUG_MODE) {
+                debug_print_backtrace();
+            }
+        }
+        return $result;
+    }
+
+    public static function rollback(int $flags = null, $name = null) {
+        $result = self::$conn->rollback($flags, $name);
+        if (!$result) {
+            echo 'Failed to set rollback transaction';
+            if (self::DEBUG_MODE) {
+                debug_print_backtrace();
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Just a Simple Database Query with Result
+     *
+     * @param string $sql - SQL Query
+     * @return array of arrays - fetched data
+     */
     public static function query($sql) {
         self::connectIfNeeded();
 
@@ -134,6 +184,8 @@ class Db {
         }
 
         $stmt->close();
+
+        return true;
     }
 
     private static function bindParams($stmt, $types, $parameters) {

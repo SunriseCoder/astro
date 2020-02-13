@@ -43,8 +43,9 @@
                     <? /* Body Area Start */ ?>
 
                     <?php
-                        echo '<font color="red">'.$error.'</font><br /><br />';
-                        include $_SERVER["DOCUMENT_ROOT"].'/templates/login.php';
+                        if ($error) {
+                            echo '<font color="red">'.$error.'</font><br /><br />';
+                        }
                     ?>
 
                     <? /* Body Area End */ ?>

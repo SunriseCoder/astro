@@ -31,6 +31,7 @@
 
                         $questions_by_questionnaire_sql =
                             'SELECT q.id as question_id,
+                                    q.number as question_number,
                                     q.text as question_text,
                                     q.position as question_position,
                                     qt.name as question_type
@@ -41,6 +42,7 @@
 
                         $all_questions_sql =
                             'SELECT q.id as question_id,
+                                    q.number as question_number,
                                     q.text as question_text,
                                     q.position as question_position,
                                     qt.name as question_type
@@ -81,9 +83,10 @@
                                     echo '<table>';
                                     echo '<tr>
                                             <th>ID</th>
+                                            <th>Number</th>
                                             <th>Text</th>
-                                            <th>Options</th>
                                             <th>Type</th>
+                                            <th>Options</th>
                                             <th>Position</th>
                                             <th>Actions</th>
                                           </tr>';
@@ -92,9 +95,10 @@
                                     foreach ($questions_result as $question_row) {
                                         echo '<tr>';
                                         echo '<td>'.$question_row['question_id'].'</td>';
+                                        echo '<td>'.$question_row['question_number'].'</td>';
                                         echo '<td>'.$question_row['question_text'].'</td>';
-                                        echo '<td>'.$question_options_map[$question_row['question_id']].'</td>';
                                         echo '<td>'.$question_row['question_type'].'</td>';
+                                        echo '<td>'.$question_options_map[$question_row['question_id']].'</td>';
                                         echo '<td>'.$question_row['question_position'].'</td>';
                                         echo '<td><a href="question_edit.php?id='.$question_row['question_id'].'">Edit</a></td>';
                                         echo '</tr>';

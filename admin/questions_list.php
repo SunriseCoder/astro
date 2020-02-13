@@ -40,28 +40,34 @@
 
                             // Questions List
                             $questions_sql = 'SELECT  q.id as question_id,
-                                            q.text as question_text,
-                                            qn.name as questionnaire_name,
-                                            qt.name as question_type_name
-                                           FROM questions q
-                                      LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
-                                      LEFT JOIN question_types qt on qt.id = q.question_type_id ';
+                                                      q.number as question_number,
+                                                      q.position as question_position,
+                                                      q.text as question_text,
+                                                      qn.name as questionnaire_name,
+                                                      qt.name as question_type_name
+                                                 FROM questions q
+                                            LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
+                                            LEFT JOIN question_types qt on qt.id = q.question_type_id';
                             $questions_result = Db::query($questions_sql);
                             if (count($questions_result) > 0) {
                                 echo '<tr>
                                         <th>ID</th>
+                                        <th>Number</th>
                                         <th>Text</th>
-                                        <th>Options</th>
                                         <th>Type</th>
+                                        <th>Options</th>
+                                        <th>Position</th>
                                         <th>Questionnaire</th>
                                         <th>Actions</th>
                                       </tr>';
                                 foreach ($questions_result as $question_row) {
                                     echo '<tr>';
                                     echo '<td>'.$question_row['question_id'].'</td>';
+                                    echo '<td>'.$question_row['question_number'].'</td>';
                                     echo '<td>'.$question_row['question_text'].'</td>';
-                                    echo '<td>'.$question_options_map[$question_row['question_id']].'</td>';
                                     echo '<td>'.$question_row['question_type_name'].'</td>';
+                                    echo '<td>'.$question_options_map[$question_row['question_id']].'</td>';
+                                    echo '<td>'.$question_row['question_position'].'</td>';
                                     echo '<td>'.$question_row['questionnaire_name'].'</td>';
                                     echo '<td><a href="question_edit.php?id='.$question_row['question_id'].'">Edit</a></td>';
                                     echo '</tr>';

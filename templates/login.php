@@ -7,8 +7,8 @@
     $user = LoginDao::autologin();
 
     if ($user) {
-        echo 'Welcome, User '.$user->id;
-        echo ' (<a href="logout.php">Logout</a>)';
+        echo 'Welcome, '.$user->name;
+        echo ' (<a href="/logout.php">Logout</a>)';
     } else {
     ?>
         <form action="login.php" method="POST">
@@ -30,7 +30,7 @@
                         <input type="submit" value="Sign In" />
                     </td>
                     <td>
-                        <a href="register.php">Sing Up</a>
+                        <a href="register.php">Sign Up</a>
                     </td>
                 </tr>
             </table>
