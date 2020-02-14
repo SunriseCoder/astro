@@ -32,6 +32,18 @@
 
             return $result;
         }
+
+        /**
+         * Checks that the current PHP version meets the requirements
+         *
+         * @param string $required like: '5.4.1';
+         *
+         * @return TRUE if the current version is equals or greater than $required, otherwise FALSE
+         */
+        public static function checkPhpVersion($required) {
+            $result = version_compare(phpversion(), $required, '>=');
+            return $result;
+        }
     }
 
     class Email {

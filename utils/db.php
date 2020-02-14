@@ -2,6 +2,10 @@
 
 include $_SERVER["DOCUMENT_ROOT"].'/utils/config.php';
 
+if (!class_exists('Utils')) {
+    include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php';
+}
+
 class Db {
     const DEBUG_MODE = true;
 
@@ -39,6 +43,11 @@ class Db {
     }
 
     public static function beginTransaction($flags = null, $name = null) {
+        if (!Utils::checkPhpVersion('5.5')) {
+            $result = self::autocommit(FALSE);
+            return $result;
+        }
+
         $result = self::$conn->begin_transaction($flags, $name);
         if (!$result) {
             echo 'Failed to set begin Transaction';
@@ -50,6 +59,12 @@ class Db {
     }
 
     public static function commit(int $flags = null, $name = null) {
+        if (!Utils::checkPhpVersion('5.5')) {
+            $result = self::$conn->commit();
+            $result &= self::$conn->autocommit(TRUE);
+            return $result;
+        }
+
         $result = self::$conn->commit($flags, $name);
         if (!$result) {
             echo 'Failed to set commit transaction';
@@ -61,6 +76,12 @@ class Db {
     }
 
     public static function rollback(int $flags = null, $name = null) {
+        if (!Utils::checkPhpVersion('5.5')) {
+            $result = self::$conn->rollback();
+            $result &= self::$conn->autocommit(TRUE);
+            return $result;
+        }
+
         $result = self::$conn->rollback($flags, $name);
         if (!$result) {
             echo 'Failed to set rollback transaction';
