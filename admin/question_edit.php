@@ -45,8 +45,11 @@
                                 // Insert New Question
                                 $question_insert_sql =
                                     'INSERT INTO questions (questionnaire_id, question_type_id, number, position, text) VALUES (?, ?, ?, ?, ?)';
-
-                                $position = 10 * QuestionnaireDao::countQuestions($_POST['questionnaire_id']);
+                                $position = $_POST['question_position'];
+                                if (empty($position)) {
+                                    // Position Calculations
+                                    $position = 10 * QuestionnaireDao::countQuestions($_POST['questionnaire_id']);
+                                }
                                 Db::prepStmt($question_insert_sql, 'iisis',
                                     [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_number'],
                                         $position, $_POST['question_text']]);

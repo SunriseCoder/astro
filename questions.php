@@ -84,6 +84,12 @@
                                                 case QuestionType::DateAndTime:
                                                     echo $question->text.' <input type="datetime-local" name="answer-'.$prefix.$question->id.'" />';
                                                     break;
+                                                case QuestionType::Date:
+                                                    echo $question->text.' <input type="date" name="answer-'.$prefix.$question->id.'" />';
+                                                    break;
+                                                case QuestionType::Time:
+                                                    echo $question->text.' <input type="time" name="answer-'.$prefix.$question->id.'" />';
+                                                    break;
                                                 case QuestionType::TextLine:
                                                     echo $question->text.' <input type="text" name="answer-'.$prefix.$question->id.'" />';
                                                     break;

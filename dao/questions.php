@@ -14,6 +14,7 @@
     class AnswerSession {
         public $id;
         public $user;
+        public $questionnaire;
         public $ipAddress;
         public $date;
     }
@@ -45,6 +46,8 @@
         const DateAndTime = 'DATE_AND_TIME';
         const Location = 'LOCATION';
         const Complex = 'COMPLEX';
+        const Date = 'DATE';
+        const Time = 'TIME';
 
         public $id;
         public $code;
@@ -94,6 +97,11 @@
                 $matches = [];
                 $complexAnswers = [];
                 foreach ($_POST as $key => $value) {
+                    // Don't save empty Answers
+                    if (empty($value)) {
+                        continue;
+                    }
+
                     // Basic Questions like: 'answer-15'
                     if (preg_match('/^answer-([0-9]+)$/', $key, $matches)) {
                         $answer = new Answer();
@@ -116,6 +124,8 @@
                             case QuestionType::TextLine:
                             case QuestionType::TextArea:
                             case QuestionType::DateAndTime:
+                            case QuestionType::Date:
+                            case QuestionType::Time:
                             case QuestionType::Location:
                             case QuestionType::Complex:
                                 $answer->value = $value;
@@ -176,6 +186,8 @@
                             case QuestionType::TextLine:
                             case QuestionType::TextArea:
                             case QuestionType::DateAndTime:
+                            case QuestionType::Date:
+                            case QuestionType::Time:
                             case QuestionType::Location:
                             case QuestionType::Complex:
                                 $answer->value[$subQuestion->id] = $value;
@@ -237,8 +249,29 @@
             }
         }
 
+        public static function delete($id) {
+            try {
+                Db::autocommit(FALSE);
+                Db::beginTransaction(0, 'DeleteAnswerSession');
+
+                $sql = 'DELETE FROM answers WHERE session_id = ?';
+                Db::prepStmt($sql, 'i', [$id]);
+
+                $sql = 'DELETE FROM answer_sessions WHERE id = ?';
+                Db::prepStmt($sql, 'i', [$id]);
+
+                Db::commit();
+                return TRUE;
+            } catch (Exception $e) {
+                Db::printError();
+                Db::rollback();
+                return FALSE;
+            }
+        }
+
         private static function insertSession(AnswerSession $answerSession) {
-            $sql = 'INSERT INTO answer_sessions (user_id, ip_address, date) VALUES (?, ?, ?)';
+            $sql = 'INSERT INTO answer_sessions (user_id, questionnaire_id, ip_address, date)
+                         VALUES (?, (SELECT value FROM settings WHERE code = \'DEFAULT_QUESTIONNAIRE\'), ?, ?)';
             Db::prepStmt($sql, 'iss', [$answerSession->user->id, $answerSession->ipAddress, $answerSession->date]);
             $sessionId = Db::insertedId();
             return $sessionId;

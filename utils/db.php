@@ -267,5 +267,11 @@ class Db {
 
         return $result;
     }
+
+    public static function printError() {
+        if (self::DEBUG_MODE) {
+            echo self::$conn->error."\n";
+        }
+    }
 }
 ?>
