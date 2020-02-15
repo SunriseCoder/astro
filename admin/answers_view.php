@@ -1,6 +1,6 @@
 <?php
     if (!isset($_GET['session_id']) || !preg_match('/^[0-9]+$/', $_GET['session_id'])) {
-        Utils::redirect('admin/answer_sessions_list.php');
+        Utils::redirect('/admin/answer_sessions_list.php');
     }
 ?>
 

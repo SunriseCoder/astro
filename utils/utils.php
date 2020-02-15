@@ -18,7 +18,7 @@
 
     class Utils {
         public static function redirect($url) {
-            header("Location: /".$url, true);
+            header("Location: ".$url, true);
             exit;
         }
 

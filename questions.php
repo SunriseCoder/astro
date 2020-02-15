@@ -1,11 +1,6 @@
 <?php
     include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php';
-
-    LoginDao::autologin();
-
-    if (!LoginDao::isLogged()) {
-        Utils::redirect('login.php');
-    }
+    LoginDao::checkPermissions([], '/login.php');
 ?>
 
 <html>

@@ -12,14 +12,25 @@ class Permission {
     // Administration
     const AdminMenuVisible = 'AdminMenuVisible';
 
-    // Customer
-    const AnswerAsCustomer = 'AnswerAsCustomer';
+    // Astrologers
+    const AstrologerAnswering = 'AstrologerAnswering';
 
     public $id;
     public $code;
 }
 
 class PermissionDao {
+    public static function getAll() {
+        $permissions = [];
+        $sql = 'SELECT * FROM permissions ORDER BY id';
+        $results = Db::query($sql);
+        foreach ($results as $result) {
+            $permission = self::fetchPermission($result);
+            $permissions[$permission->id] = $permission;
+        }
+        return $permissions;
+    }
+
     public static function getAllByUserId($user_id) {
         $sql =
             '   SELECT DISTINCT
@@ -44,15 +55,43 @@ class PermissionDao {
 
         return $permissions;
     }
+
+    public static function fetchPermission($queryRow) {
+        $permission = new Permission();
+        $permission->id = $queryRow['id'];
+        $permission->code = $queryRow['code'];
+        return $permission;
+    }
 }
 
 class Role {
     public $id;
     public $name;
-    public $permissions;
+    public $permissions = [];
 }
 
 class RoleDao {
+    public static function getAll() {
+        // Load Roles
+        $roles = [];
+        $sql = 'SELECT * FROM roles ORDER BY id';
+        $results = Db::query($sql);
+        foreach ($results as $result) {
+            $role = self::fetchRole($result);
+            $roles[$role->id] = $role;
+        }
+
+        // Load Permissions
+        $permissions = PermissionDao::getAll();
+        $sql = 'SELECT * FROM j_roles_permissions';
+        $joins = Db::query($sql);
+        foreach ($joins as $join) {
+            $roles[$join['role_id']]->permissions[$join['permission_id']] = $permissions[$join['permission_id']];
+        }
+
+        return $roles;
+    }
+
     public static function getAllByUserId($user_id) {
         $sql =
             '   SELECT r.id id,
@@ -65,14 +104,18 @@ class RoleDao {
         $rolesResult = Db::prepQuery($sql, 'i', [$user_id]);
         $roles = [];
         foreach ($rolesResult as $roleResult) {
-            $role = new Role();
-            $role->id = $roleResult['id'];
-            $role->name = $roleResult['name'];
-
-            $roles[] = $role;
+            $role = self::fetchRole($roleResult);
+            $roles[$role->id] = $role;
         }
 
         return $roles;
+    }
+
+    public static function fetchRole($queryRow) {
+        $role = new Role();
+        $role->id = $queryRow['id'];
+        $role->name = $queryRow['name'];
+        return $role;
     }
 }
 
@@ -80,8 +123,8 @@ class User {
     public $id;
     public $email;
     public $pass;
-    public $roles;
-    public $permissions;
+    public $roles = [];
+    public $permissions = [];
     public $active;
 
     public function generatePassword() {
@@ -136,6 +179,36 @@ class UserDao {
         return $result;
     }
 
+    public static function getAll() {
+        // Load User
+        $sql = 'SELECT * FROM users ORDER BY id';
+        $results = Db::query($sql);
+        $users = [];
+        foreach ($results as $result) {
+            $user = self::fetchUser($result);
+            $users[$user->id] = $user;
+        }
+
+        // Load Roles
+        $roles = RoleDao::getAll();
+        $sql = 'SELECT * FROM j_users_roles';
+        $joins = Db::query($sql);
+        foreach ($joins as $join) {
+            $users[$join['user_id']]->roles[$join['role_id']] = $roles[$join['role_id']];
+        }
+
+        // Assign Permissions
+        foreach ($users as $user) {
+            foreach ($user->roles as $role) {
+                foreach ($role->permissions as $permission) {
+                    $user->permissions[$permission->id] = $permission;
+                }
+            }
+        }
+
+        return $users;
+    }
+
     public static function getUserById($user_id) {
         // Loading User
         $sql = 'SELECT * FROM users WHERE id = ?';
@@ -144,13 +217,9 @@ class UserDao {
             return NULL;
         }
 
+        // Load User
         $userRs = $usersRs[0];
-        $user = new User();
-        $user->id = $userRs['id'];
-        $user->name = $userRs['name'];
-        $user->email = $userRs['email'];
-        $user->pass = $userRs['pass'];
-        $user->active = $userRs['active'];
+        $user = self::fetchUser($userRs);
 
         // Load Roles
         $roles = RoleDao::getAllByUserId($user->id);
@@ -175,6 +244,16 @@ class UserDao {
         $user = UserDao::getUserById($userResult['id']);
         return $user;
     }
+
+    public static function fetchUser($queryRow) {
+        $user = new User();
+        $user->id = $queryRow['id'];
+        $user->name = $queryRow['name'];
+        $user->email = $queryRow['email'];
+        $user->pass = $queryRow['pass'];
+        $user->active = $queryRow['active'];
+        return $user;
+    }
 }
 
 class LoginSession {
@@ -195,6 +274,36 @@ class LoginDao {
     const COOKIE_NAME = 'loginSession';
 
     private static $currentUser;
+
+    /**
+     * Checking presense of ALL required permissions
+     * If the current User doesn't even one permission, redirect will be performed
+     *
+     * @param array $permissions Array of Permissions to check
+     * @param string $redirectUrl URL to redirect in case of lack of the Permissions
+     */
+    public static function checkPermissions($permissions, $redirectUrl) {
+        if (!self::$currentUser) {
+            self::autologin();
+        }
+
+        if (!self::$currentUser) {
+            Utils::redirect($redirectUrl);
+        }
+
+        foreach ($permissions as $permission) {
+            $found = FALSE;
+            foreach (self::$currentUser->permissions as $userPermission) {
+                if ($userPermission->code == $permission) {
+                    $found = TRUE;
+                    break;
+                }
+            }
+            if (!$found) {
+                Utils::redirect($redirectUrl);
+            }
+        }
+    }
 
     /**
      * Checking autologin:
