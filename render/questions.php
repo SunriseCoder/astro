@@ -141,11 +141,10 @@
                 case QuestionType::Complex:
                     // Very complex Question Rendering
                     $metadata = Json::decode($question->markup);
-                    $questionText = $metadata->text;
                     $addEntryText = $metadata->addEntryText;
                     $subQuestions = $metadata->subQuestions;
 
-                    echo $questionText;
+                    echo $question->text;
 
                     // Metadata for adding Entry by JavaScript
                     echo '<div id="questionRoot-'.$question->id.'"></div>';

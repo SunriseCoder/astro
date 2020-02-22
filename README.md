@@ -3,8 +3,6 @@
 ### Complex Question Example
 
 {
-    "array":"true",
-    "text":"Question Text",
     "addEntryText":"Add Sub",
     "subQuestions":[
         {

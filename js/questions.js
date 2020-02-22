@@ -20,6 +20,16 @@ function addQuestionEntry(questionId) {
             input.setAttribute('type', 'datetime-local');
             input.setAttribute('name', inputName);
             break;
+        case 'DATE':
+            var input = createElement('input', td);
+            input.setAttribute('type', 'date');
+            input.setAttribute('name', inputName);
+            break;
+        case 'TIME':
+            var input = createElement('input', td);
+            input.setAttribute('type', 'time');
+            input.setAttribute('name', inputName);
+            break;
         case 'TEXT_LINE':
             var input = createElement('input', td);
             input.setAttribute('type', 'text');
