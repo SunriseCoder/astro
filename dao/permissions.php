@@ -170,10 +170,9 @@ class UserDao {
         $encryptedPass = md5($password);
         $result = Db::prepStmt($sql, 'sss', [$user->name, $user->email, $encryptedPass]);
         if ($result) {
-            // TODO Send real password after test
             $result = Email::sendPassword($user->email, $password);
-        } else if (Db::DEBUG_MODE) {
-            echo 'Error due to insert User into the Database.';
+        } else {
+            Logger::error('Error due to insert User into the Database');
         }
 
         return $result;

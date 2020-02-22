@@ -11,5 +11,9 @@
         if ($user) {
             echo "<li><a href=\"questions.php\">Survey</a></li>";
         }
+
+        if ($user && $user->hasPermission(Permission::AstrologerAnswering)) {
+            echo "<li><a href=\"astrologer_choose.php\">Astrologer</a></li>";
+        }
     ?>
 </ul>

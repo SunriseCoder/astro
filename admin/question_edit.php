@@ -36,23 +36,25 @@
                                             question_type_id = ?,
                                             number = ?,
                                             text = ?,
+                                            markup = ?,
                                             position = ?
                                       WHERE id = ?';
-                                Db::prepStmt($question_update_sql, 'iissii',
+                                Db::prepStmt($question_update_sql, 'iisssii',
                                     [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_number'],
-                                        $_POST['question_text'], $_POST['question_position'], $question_id]);
+                                        $_POST['question_text'], $_POST['question_markup'], $_POST['question_position'], $question_id]);
                             } else {
                                 // Insert New Question
                                 $question_insert_sql =
-                                    'INSERT INTO questions (questionnaire_id, question_type_id, number, position, text) VALUES (?, ?, ?, ?, ?)';
+                                    'INSERT INTO questions (questionnaire_id, question_type_id, number, position, text, markup)
+                                          VALUES (?, ?, ?, ?, ?, ?)';
                                 $position = $_POST['question_position'];
                                 if (empty($position)) {
                                     // Position Calculations
                                     $position = 10 * QuestionnaireDao::countQuestions($_POST['questionnaire_id']);
                                 }
-                                Db::prepStmt($question_insert_sql, 'iisis',
+                                Db::prepStmt($question_insert_sql, 'iisiss',
                                     [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_number'],
-                                        $position, $_POST['question_text']]);
+                                        $position, $_POST['question_text'], $_POST['question_markup']]);
                                 $question_id = Db::insertedId();
                             }
 
@@ -124,6 +126,7 @@
                             'SELECT q.id as question_id,
                                     q.number as question_number,
                                     q.text as question_text,
+                                    q.markup as question_markup,
                                     q.position as question_position,
                                     q.questionnaire_id as questionnaire_id,
                                     q.question_type_id as question_type_id,
@@ -165,7 +168,9 @@
                               </tr>';
 
                         // Question ID
-                        $question_id = $question_row['question_id'];
+                        if (isset($question_row['question_id'])) {
+                            $question_id = $question_row['question_id'];
+                        }
                         echo '<tr><td>ID</td><td>';
                         if (isset($question_id)) {
                             echo '<input type="hidden" name="question_id" value="'.$question_id.'" />'.$question_id;
@@ -175,13 +180,20 @@
                         echo '</td></tr>';
 
                         // Question Number
-                        echo '<tr><td>Question Number</td><td><input type="text" name="question_number" size="50" value="'.$question_row['question_number'].'" /></td></tr>';
+                        $questionNumber = isset($question_row['question_number']) ? $question_row['question_number'] : '';
+                        echo '<tr><td>Question Number</td><td><input type="text" name="question_number" size="50" value="'.$questionNumber.'" /></td></tr>';
 
                         // Question Text
-                        echo '<tr><td>Question Text</td><td><textarea name="question_text" rows="20" cols="100">'.$question_row['question_text'].'</textarea></td></tr>';
+                        $questionText = isset($question_row['question_text']) ? $question_row['question_text'] : '';
+                        echo '<tr><td>Question Text</td><td><input type="text" name="question_text" size="50" value="'.$questionText.'" /></td></tr>';
 
-                        // Question Number
-                        echo '<tr><td>Position in Questionnaire</td><td><input type="text" name="question_position" size="50" value="'.$question_row['question_position'].'" /></td></tr>';
+                        // Question Markup
+                        $questionMarkup = isset($question_row['question_markup']) ? $question_row['question_markup'] : '';
+                        echo '<tr><td>Question Markup</td><td><textarea name="question_markup" rows="10" cols="50">'.$questionMarkup.'</textarea></td></tr>';
+
+                        // Question Position
+                        $questionPosition = isset($question_row['question_position']) ? $question_row['question_position'] : '';
+                        echo '<tr><td>Position in Questionnaire</td><td><input type="text" name="question_position" size="50" value="'.$questionPosition.'" /></td></tr>';
 
                         // Questionnaire Field
                         echo '<tr><td>Questionnaire</td><td><select name="questionnaire_id">';
@@ -207,7 +219,7 @@
                         $question_types_result = Db::query($question_types_sql);
                         foreach ($question_types_result as $question_type_row) {
                             echo '<option question_type_code="'.$question_type_row['code'].'" value="'.$question_type_row['id'].'"';
-                            if ($question_row['question_type_id'] == $question_type_row['id']) {
+                            if (isset($question_row) && $question_row['question_type_id'] == $question_type_row['id']) {
                                 echo ' selected="selected"';
                             }
                             echo '>'.$question_type_row['name'].'</option>';
@@ -225,8 +237,10 @@
                               </tr>';
 
                         // Question Options
-                        $question_type = $question_row['question_type_code'];
-                        if ($question_type == 'SINGLE_CHOICE') {
+                        if (isset($question_row['question_type_code'])) {
+                            $question_type = $question_row['question_type_code'];
+                        }
+                        if (isset($question_type) && $question_type == 'SINGLE_CHOICE') {
                             $question_options_result = Db::prepQuery($question_options_sql, 'i', [$question_id]);
 
                             // Questions List

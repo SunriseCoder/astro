@@ -40,6 +40,7 @@
                             $sql = "SELECT ast.id as id,
                                            qn.id as questionnaire_id,
                                            qn.name as questionnaire_name,
+                                           ast.origin_id as origin_id,
                                            ast.user_id as user_id,
                                            u.name as user_name,
                                            ast.ip_address as ip_address,
@@ -53,6 +54,7 @@
                                 echo '<tr>
                                         <th>ID</th>
                                         <th>Questionnaire</th>
+                                        <th>Origin</th>
                                         <th>User</th>
                                         <th>IP Address</th>
                                         <th>Date</th>
@@ -62,6 +64,8 @@
                                     echo '<tr>';
                                     echo '<td>'.$row['id'].'</td>';
                                     echo '<td>'.$row['questionnaire_id'].': '.$row['questionnaire_name'].'</td>';
+                                    $originText = isset($row['origin_id']) ? '<a href="answers_view.php?session_id='.$row['origin_id'].'">'.$row['origin_id'].': View</a>' : '';
+                                    echo '<td>'.$originText.'</td>';
                                     echo '<td>'.$row['user_id'].': '.$row['user_name'].'</td>';
                                     echo '<td>'.$row['ip_address'].'</td>';
                                     echo '<td>'.$row['date'].'</td>';

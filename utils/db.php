@@ -7,8 +7,6 @@ if (!class_exists('Utils')) {
 }
 
 class Db {
-    const DEBUG_MODE = true;
-
     public static $conn;
 
     private static function connectIfNeeded() {
@@ -22,20 +20,16 @@ class Db {
 
         // Check connection
         if (self::$conn->connect_errno) {
-            $message = 'Connection failed';
-            if (self::DEBUG_MODE) {
-                $message += ': '.self::$conn->connect_error;
-                debug_print_backtrace();
-            }
-            die($message);
+            Logger::error('Connection failed, '.self::$conn->connect_error);
+            die;
         }
     }
 
     public static function autocommit($mode) {
         $result = self::$conn->autocommit($mode);
         if (!$result) {
-            echo 'Failed to set autocommit mode: '.$mode;
-            if (self::DEBUG_MODE) {
+            Logger::warning('Failed to set autocommit mode: '.$mode);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
         }
@@ -50,8 +44,8 @@ class Db {
 
         $result = self::$conn->begin_transaction($flags, $name);
         if (!$result) {
-            echo 'Failed to set begin Transaction';
-            if (self::DEBUG_MODE) {
+            Logger::warning('Failed to set begin Transaction: '.$flags.', '.$name);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
         }
@@ -67,8 +61,8 @@ class Db {
 
         $result = self::$conn->commit($flags, $name);
         if (!$result) {
-            echo 'Failed to set commit transaction';
-            if (self::DEBUG_MODE) {
+            Logger::warning('Failed to Commit Transaction: '.$flags.', '.$name);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
         }
@@ -84,8 +78,8 @@ class Db {
 
         $result = self::$conn->rollback($flags, $name);
         if (!$result) {
-            echo 'Failed to set rollback transaction';
-            if (self::DEBUG_MODE) {
+            Logger::warning('Failed to Rollback Transaction: '.$flags.', '.$name);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
         }
@@ -103,15 +97,15 @@ class Db {
 
         $query = self::$conn->query($sql);
         if (!$query) {
-            $message = 'Query failed';
-            if (self::DEBUG_MODE) {
-                $message += ': '.self::$conn->error;
+            Logger::error('Query failed: '.self::$conn->error);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
-            die($message);
+            die;
         }
 
         $fields = $query->fetch_fields();
+        $result = [];
         while ($row = $query->fetch_array(MYSQLI_ASSOC)) {
             $converted_row = [];
             foreach ($fields as $field) {
@@ -139,12 +133,11 @@ class Db {
         // Preparing Statement
         $stmt = self::$conn->prepare($sql);
         if (!$stmt) {
-            $message = 'Prepared Query failed';
-            if (self::DEBUG_MODE) {
-                $message += ': '.self::$conn->error;
+            Logger::error('Prepared Query failed: '.self::$conn->error);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
-            die($message);
+            die;
         }
 
         // Binding Parameters if they are set
@@ -153,12 +146,11 @@ class Db {
         // Checking execution Status
         $status = $stmt->execute();
         if (!$status) {
-            $message = 'Execute Prepared Statement failed';
-            if (self::DEBUG_MODE) {
-                $message += ': '.self::$conn->error;
+            Logger::error('Execute Prepared Statement failed: '.self::$conn->error);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
-            die($message);
+            die;
         }
 
         // Fetching Result
@@ -182,12 +174,11 @@ class Db {
         // Preparing Statement
         $stmt = self::$conn->prepare($sql);
         if (!$stmt) {
-            $message = 'Prepared Statement failed';
-            if (self::DEBUG_MODE) {
-                $message += ': '.self::$conn->error;
+            Logger::error('Prepared Statement failed: '.self::$conn->error);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
-            die($message);
+            die;
         }
 
         // Binding Parameters if they are set
@@ -196,12 +187,11 @@ class Db {
         // Checking execution Status
         $status = $stmt->execute();
         if (!$status) {
-            $message = 'Execute Prepared Statement failed';
-            if (self::DEBUG_MODE) {
-                $message = ': '.self::$conn->error;
+            Logger::error('Execute Prepared Statement failed: '.self::$conn->error);
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
-            die($message);
+            die;
         }
 
         $stmt->close();
@@ -212,10 +202,11 @@ class Db {
     private static function bindParams($stmt, $types, $parameters) {
         // Binding Parameters if they are set
         if ($types == NULL) {
-            if (self::DEBUG_MODE) {
+            Logger::error('$types must be not NULL');
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
-            die('$types must be not NULL');
+            die;
         }
 
         $bind_names[] = $types;
@@ -239,6 +230,7 @@ class Db {
 
         call_user_func_array(array($stmt, 'bind_result'), $params);
 
+        $result = [];
         while ($stmt->fetch()) {
             foreach($row as $key => $val) {
                 $c[$key] = $val;
@@ -251,27 +243,23 @@ class Db {
 
     public static function insertedId() {
         if (self::$conn == NULL) {
-            if (self::DEBUG_MODE) {
+            Logger::error('Cannot get insert_id, connection is NULL');
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
-            die('Cannot get insert_id, connection is NULL');
+            die;
         }
 
         $result = self::$conn->insert_id;
         if (!$result) {
-            if (self::DEBUG_MODE) {
+            Logger::error('Connection does not have insert_id');
+            if (Logger::SHOW_STACKTRACE) {
                 debug_print_backtrace();
             }
-            die('Connection does not have insert_id');
+            die;
         }
 
         return $result;
-    }
-
-    public static function printError() {
-        if (self::DEBUG_MODE) {
-            echo self::$conn->error."\n";
-        }
     }
 }
 ?>

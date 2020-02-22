@@ -31,7 +31,7 @@
 
                     <?php
                         include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php';
-                        include $_SERVER["DOCUMENT_ROOT"].'/utils/json.php';
+                        include $_SERVER["DOCUMENT_ROOT"].'/render/questions.php';
 
                         // Saving Question Answers
                         $alreadyAnswered = AnswerSessionDao::hasAlreadyAnswered();
@@ -62,88 +62,11 @@
                                     <?php
                                     $questions = QuestionDao::getDefaultQuestionnaire();
                                     if (count($questions) > 0) {
-                                        echo '<tr>
-                                                <th>#</th>
-                                                <th>Text</th>
-                                              </tr>';
-                                        $counter = 1;
-                                        $prefix = '';
-
-                                        function renderQuestion($question, $prefix) {
-                                            echo '<tr>';
-                                            echo '<td>'.$question->number.'</td>';
-                                            echo '<td>';
-
-                                            // Render different layouts for different question types
-                                            switch($question->type->code) {
-                                                case QuestionType::DateAndTime:
-                                                    echo $question->text.' <input type="datetime-local" name="answer-'.$prefix.$question->id.'" />';
-                                                    break;
-                                                case QuestionType::Date:
-                                                    echo $question->text.' <input type="date" name="answer-'.$prefix.$question->id.'" />';
-                                                    break;
-                                                case QuestionType::Time:
-                                                    echo $question->text.' <input type="time" name="answer-'.$prefix.$question->id.'" />';
-                                                    break;
-                                                case QuestionType::TextLine:
-                                                    echo $question->text.' <input type="text" name="answer-'.$prefix.$question->id.'" />';
-                                                    break;
-                                                case QuestionType::SingleChoice:
-                                                    // Question Options Rendering
-                                                    if ($question->options) {
-                                                        echo $question->text;
-                                                        foreach ($question->options as $questionOption) {
-                                                            $group = 'answer-'.$prefix.$question->id;
-                                                            $value = $questionOption->id;
-                                                            $text = $questionOption->text;
-                                                            echo '<br /><input type="radio" name="'.$group.'" value="'.$value.'">'.$text;
-                                                        }
-                                                    }
-                                                    break;
-                                                case QuestionType::Complex:
-                                                    // Very complex Question Rendering
-                                                    $metadata = Json::decode($question->text);
-                                                    $questionText = $metadata->text;
-                                                    $isArray = $metadata->array;
-                                                    $addEntryText = $metadata->addEntryText;
-                                                    $subQuestions = $metadata->subQuestions;
-
-                                                    echo $questionText;
-
-                                                    // If the Complex Question has multiple entries, adding Entry by JavaScript
-                                                    if ($isArray) {
-                                                        echo '<div id="questionRoot-'.$question->id.'"></div>';
-                                                        echo ' <button type="button" onclick="addQuestionEntry('.$question->id.')">'.$addEntryText.'</button>';
-                                                        echo '<script>';
-                                                        echo 'var subQuestions = [];';
-                                                        foreach ($subQuestions as $subQuestion) {
-                                                            echo 'var subQuestionStr = \''.Json::encode($subQuestion).'\';';
-                                                            echo 'var subQuestion = JSON.parse(subQuestionStr);';
-                                                            echo 'subQuestions.push(subQuestion);';
-                                                        }
-                                                        echo 'complexQuestions['.$question->id.'] = subQuestions;';
-                                                        echo '</script>';
-                                                    } else {
-                                                        // Otherwise render just one Entry via PHP
-                                                        echo '<table>';
-                                                        $prefix = $question->id.'-';
-                                                        foreach ($subIds as $subId) {
-                                                            $subQuestion = QuestionDao::get($subId)[0];
-                                                            renderQuestion($subQuestion, $prefix);
-                                                        }
-                                                        echo '</table>';
-                                                    }
-                                                    break;
-                                                default:
-                                                    echo '<font color="red">Unsupported Question Type: '.$question->type->code.'</font>';
-                                                    var_dump($question);
-                                                    break;
-                                            }
-                                            echo '</td></tr>';
-                                        }
-
+                                        echo '<tr><th>#</th><th>Text</th></tr>';
                                         foreach ($questions as $question) {
-                                            renderQuestion($question, $prefix);
+                                            echo '<tr><td>'.$question->number.'</td><td>';
+                                            QuestionRender::renderQuestion($question);
+                                            echo '</td></tr>';
                                         }
                                     } else {
                                         echo '<tr><td colspan="2">0 results</td></tr>';

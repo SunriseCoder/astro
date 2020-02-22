@@ -31,47 +31,103 @@
                     <table>
                         <?
                             include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php';
+                            include $_SERVER["DOCUMENT_ROOT"].'/render/questions.php';
 
                             // Delete Answer Session
-                            $id = $_GET['session_id'];
+                            $answerSessionId = $_GET['session_id'];
+                            $answerSessions = AnswerSessionDao::getWithAllAnswers($answerSessionId);
 
-                            $sql = "SELECT a.id as id,
-                                           q.number as question_number,
-                                           q.text as question_text,
-                                           qt.name as question_type_name,
-                                           qo.text as question_option_text,
-                                           a.value as answer_value
-                                      FROM questionnaires qn
-                                 LEFT JOIN questions q on q.questionnaire_id = qn.id
-                                 LEFT JOIN answers a on a.question_id = q.id
-                                 LEFT JOIN question_options qo on qo.id = a.question_option_id
-                                 LEFT JOIN question_types qt on qt.id = q.question_type_id
-                                 LEFT JOIN answer_sessions ast on ast.id = a.session_id
-                                     WHERE qn.id = (SELECT questionnaire_id FROM answer_sessions WHERE id = ?)
-                                  ORDER BY q.position ASC";
-                            $answers = Db::prepQuery($sql, 'i', [$id]);
-                            if (count($answers) == 0) {
-                                echo 'No Answers found';
-                            }
-                            if (count($answers) > 0) {
-                                echo '<tr>
-                                        <th>ID</th>
-                                        <th>Question</th>
-                                        <th>Type</th>
-                                        <th>Option Text</th>
-                                        <th>Value</th>
-                                      </tr>';
-                                foreach ($answers as $row) {
-                                    echo '<tr>';
-                                    echo '<td>'.($row['id'] ? $row['id'] : '<font color="red"><b>! empty !</b></font>').'</td>';
-                                    echo '<td>'.($row['question_number'] ? $row['question_number'].') ' : '').$row['question_text'].'</td>';
-                                    echo '<td>'.$row['question_type_name'].'</td>';
-                                    echo '<td>'.$row['question_option_text'].'</td>';
-                                    echo '<td>'.$row['answer_value'].'</td>';
-                                    echo '</tr>';
+                            if (count($answerSessions) > 0) {
+                                $answerSession = $answerSessions[$answerSessionId];
+                                $originSession = $answerSession->origin;
+
+                                // Prepare Answer Maps
+                                $originAnswersByQuestions = [];
+                                if (isset($originSession)) {
+                                    foreach ($originSession->answers as $answer) {
+                                        $originAnswersByQuestions[$answer->questionId] = $answer;
+                                    }
+                                }
+
+                                $answersByQuestions = [];
+                                foreach ($answerSession->answers as $answer) {
+                                    $answersByQuestions[$answer->questionId] = $answer;
+                                }
+
+                                $questions = QuestionDao::getAllForAnswerSession($answerSessionId);
+                                if (count($questions) > 0 ) {
+                                    // Table Headers
+                                    echo '<table>';
+                                    echo    '<tr>';
+                                    echo        '<th colspan="3">Question</th>';
+                                    echo        '<th colspan="3">Participant</th>';
+                                    if (isset($originSession)) {
+                                        echo    '<th colspan="3">Astrologer</th>';
+                                    }
+                                    echo    '</tr>';
+                                    echo    '<tr>';
+                                    echo        '<th>ID</th><th>Text</th><th>Type</th>';
+                                    echo        '<th>ID</th><th>Option</th><th>Text</th>';
+                                    if (isset($originSession)) {
+                                        echo    '<th>ID</th><th>Option</th><th>Text</th>';
+                                    }
+                                    echo    '</tr>';
+
+                                    function renderAnswerCells($question, $answer) {
+                                        echo '<td>'.$answer->id.'</td>';
+                                        if (isset($answer->questionOptionId)) {
+                                            $option = $question->options[$answer->questionOptionId];
+                                            echo '<td>'.$option->text.'</td>';
+                                        } else {
+                                            echo '<td></td>';
+                                        }
+                                        if (!empty($answer->value)) {
+                                            echo '<td>';
+                                            echo $question->type->is(QuestionType::Complex) ? AnswerRender::renderComplexAnswer($question, $answer) : $answer->value;
+                                            echo '</td>';
+                                        } else {
+                                            echo '<td></td>';
+                                        }
+                                    }
+
+                                    // Table Content
+                                    foreach ($questions as $question) {
+                                        echo '<tr>';
+                                        // Questions
+                                        echo '<td>'.$question->id.'</td>';
+                                        echo '<td>';
+                                        if (!empty($question->number)) {
+                                            echo $question->number.') ';
+                                        }
+                                        echo $question->text;
+                                        echo '</td>';
+                                        echo '<td>'.$question->type->code.'</td>';
+
+                                        // Participant's Answers
+                                        if (isset($originSession)) {
+                                            if (isset($originAnswersByQuestions[$question->id])) {
+                                                $answer = $originAnswersByQuestions[$question->id];
+                                                renderAnswerCells($question, $answer);
+                                            } else {
+                                                echo '<td colspan="3"></td>';
+                                            }
+                                        }
+
+                                        // Astrologer's Answers
+                                        if (isset($answersByQuestions[$question->id])) {
+                                            $answer = $answersByQuestions[$question->id];
+                                            renderAnswerCells($question, $answer);
+                                        } else {
+                                            echo '<td colspan="3"></td>';
+                                        }
+
+                                        echo '</tr>';
+                                    }
+                                } else {
+                                    echo 'No questions found for Answer Session: '.$answerSessionId;
                                 }
                             } else {
-                                echo '<tr><td colspan="3">0 results</td></tr>';
+                                echo 'Answer Session with ID: '.$answerSessionId.' was not found';
                             }
                         ?>
                     </table>

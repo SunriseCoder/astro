@@ -29,10 +29,13 @@
                                         text as question_option_text
                                    FROM question_options';
                             $question_options_result = Db::query($question_options_sql);
+                            $question_options_map = [];
                             foreach ($question_options_result as $question_options_row) {
-                                $stored_value = $question_options_map[$question_options_row['question_id']];
-                                if (!empty($stored_value)) {
+                                if (isset($question_options_map[$question_options_row['question_id']])) {
+                                    $stored_value = $question_options_map[$question_options_row['question_id']];
                                     $stored_value = $stored_value.'<br />';
+                                } else {
+                                    $stored_value = '';
                                 }
                                 $stored_value = $stored_value.$question_options_row['question_option_text'];
                                 $question_options_map[$question_options_row['question_id']] = $stored_value;
@@ -66,7 +69,11 @@
                                     echo '<td>'.$question_row['question_number'].'</td>';
                                     echo '<td>'.$question_row['question_text'].'</td>';
                                     echo '<td>'.$question_row['question_type_name'].'</td>';
-                                    echo '<td>'.$question_options_map[$question_row['question_id']].'</td>';
+                                    echo '<td>';
+                                    if (isset($question_options_map[$question_row['question_id']])) {
+                                        echo $question_options_map[$question_row['question_id']];
+                                    }
+                                    echo '</td>';
                                     echo '<td>'.$question_row['question_position'].'</td>';
                                     echo '<td>'.$question_row['questionnaire_name'].'</td>';
                                     echo '<td><a href="question_edit.php?id='.$question_row['question_id'].'">Edit</a></td>';
