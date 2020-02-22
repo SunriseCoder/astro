@@ -37,16 +37,21 @@
                         include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php';
                         include $_SERVER["DOCUMENT_ROOT"].'/render/questions.php';
 
-                        $answerSessionId = $_GET['id'];
-                        $answerSession = AnswerSessionDao::get($answerSessionId);
-                        // Check that current Astrologer has not processed this session yet
-                        $alreadyAnswered = AnswerSessionDao::hasCurrentAstrologerAnsweredAlready($answerSessionId);
-                        if ($alreadyAnswered) {
+                        // TODO Rewrite these if-statements with a better way
+                        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+                            $answerSessionId = $_GET['id'];
+                            $answerSession = AnswerSessionDao::get($answerSessionId);
+                            // Check that current Astrologer has not processed this session yet
+                            $alreadyAnswered = AnswerSessionDao::hasCurrentAstrologerAnsweredAlready($answerSessionId);
+                        }
+
+                        // TODO Rewrite these if-statements with a better way
+                        if (isset($alreadyAnswered) && $alreadyAnswered) {
                             echo 'Sorry, but you already have taken part in the survey';
                         // Check that the Astrologer doesn't guess his own answers
                         } else if (isset($answerSession->originId)) {
                             echo 'This is not a participant\'s answers';
-                        } else if ($answerSession->userId == LoginDao::getCurrentUser()->id) {
+                        } else if (isset($answerSession) && $answerSession->userId == LoginDao::getCurrentUser()->id) {
                             echo 'Sorry, but you can not guess your own answers';
                         } else if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             // Saving Astrologer's Answers
