@@ -1,31 +1,11 @@
-<?php
-    include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php';
-
-    if (LoginDao::isLogged()) {
-        header("Location: /", true);
-        exit;
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (isset($_POST['email']) && isset($_POST['password'])) {
-            $email = $_POST['email'];
-            $pass = $_POST['password'];
-            $error = LoginDao::login($email, $pass);
-            if (!$error) {
-                header("Location: /", true);
-                exit;
-            }
-        }
-    }
-?>
-
 <html>
     <?
         $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'Login';
+        $page_title = 'Contacts';
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
     ?>
+
     <body>
         <table>
             <tr>
@@ -42,11 +22,13 @@
 
                     <? /* Body Area Start */ ?>
 
-                    <?php
-                        if (isset($error)) {
-                            echo '<font color="red">'.$error.'</font><br /><br />';
-                        }
-                    ?>
+                    <p>Project and survey administration: Vilas Manjari Dasi<br />
+                    E-Mail: <a href="mailto:vilasmanjari108@gmail.com">vilasmanjari108@gmail.com</a><br />
+                    WhatsApp: +905534440889</p>
+
+                    <p>Technical questions: Giridhari Das<br />
+                    E-Mail: <a href="mailto:sunrisecoder@gmail.com">sunrisecoder@gmail.com</a><br />
+                    WhatsApp: +79256237577</p>
 
                     <? /* Body Area End */ ?>
 

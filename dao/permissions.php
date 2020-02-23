@@ -324,6 +324,11 @@ class LoginDao {
         $cookie = $_COOKIE[self::COOKIE_NAME];
         $session = self::findSessionByCode($cookie);
 
+        // Checking that the Session exists
+        if (!$session) {
+            return NULL;
+        }
+
         // Check Session expired
         if ($session && $session->isExpired()) {
             LoginDao::deleteSession($session->id);

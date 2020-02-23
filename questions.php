@@ -48,14 +48,14 @@
                             }
                         } else {
                             ?>
-                            <div>Please take a few minutes to answer the following questions.</div><br />
-                            <div>GUARANTEE OF FULL CONFIDENTIALITY:<br />
-                                 Your privacy is important to us.  No one, including the astrologers,<br />
-                                 will see any of the personal data you give in the survey.<br />
-                                 The comparison of your answers and the astrologers' answers<br />
-                                 will be completely automated by the computer software.<br />
-                                 So you can freely answer all the questions in confidence without concern for privacy issues.
-                             </div><br />
+<p>This survey which consists of 50 simple multiple-choice questions covers several areas of your life in detail and here are a few important points to take into account while giving your answers:</p>
+<ul>
+    <li>We are asking for your legal birth name for this survey. We do NOT need your spiritual name since initiation name is above karma. If you have an additional name which is not in your passport but used by others to call you, then please add this name as well.</li>
+    <li>Questions from 2 to 9 are about your relationship with your parents at specific time cycles. The option "Not applicable" in each question should be selected only if you cannot respond to the question because you have not yet lived till that age mentioned there or you have already experienced the loss of that parent at an earlier time such as childhood. Otherwise, please do not choose this "Not applicable" option if your answer is available in the question.</li>
+    <li>Same logic above mentioned applies for the questions from 17 to 21; from 27 to 34; from 36 to 39. For example, if you are 25 years old and the question is asked for the middle or old ages, then "Not applicable" should be your answer.</li>
+</ul>
+<p>It is very important for us that you do not skip any question and give your honest answers since it will heavily effect the results of the project. Your answers will not be seen or examined by anyone, so you can have full trust in the confidentiality of your privacy.</p>
+<p>If you get any problems or questions with the survey, feel free to contact via WhatsApp: +905534440889</p>
 
                             <form action="questions.php" method="post">
                                 <table>

@@ -63,7 +63,7 @@
 
                                 // Table Content
                                 foreach ($answerSessions as $answerSession) {
-                                    if ($answerSession->questionnaireId != $questionnaire->id) {
+                                    if (!isset($answerSession->questionnaireId) || $answerSession->questionnaireId != $questionnaire->id) {
                                         continue;
                                     }
 

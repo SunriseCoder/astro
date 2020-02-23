@@ -15,5 +15,7 @@
         if ($user && $user->hasPermission(Permission::AstrologerAnswering)) {
             echo "<li><a href=\"astrologer_choose.php\">Astrologer</a></li>";
         }
+
+        echo "<li><a href=\"contacts.php\">Contacts</a></li>\n";
     ?>
 </ul>
