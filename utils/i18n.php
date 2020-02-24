@@ -1,16 +1,18 @@
 <?php
     include $_SERVER["DOCUMENT_ROOT"].'/dao/i18n.php';
 
-    Tr::init();
-
     class Tr {
-        const DEFAULT_LANGUAGE = 'eng';
+        const DEFAULT_LANGUAGE = 'en';
 
         private static $languages;
         private static $keywords;
         private static $translationMap;
 
+        private static $currentLanguage;
+
         public static function init() {
+            self::$currentLanguage = self::DEFAULT_LANGUAGE;
+
             self::$languages = LanguageDao::getAll();
             self::$keywords = KeywordDao::getAll();
             $translations = TranslationDao::getAll();
@@ -29,32 +31,23 @@
             }
         }
 
-        /**
-         * Looking for a translation in the database
-         * If $keyword for particular $language not found, return $default
-         *
-         * @param string $keyword keyword code
-         * @param string $language language code
-         * @param string $default text
-         * @return string
-         */
-        public static function tr($keyword, $language, $default) {
-            $result = self::tr($keyword, $language);
-            if ($result == $keyword) {
-                $result = $default;
-            }
-            return $result;
+        public static function getLanguages() {
+            return self::$languages;
+        }
+
+        public static function setCurrentLanguage($language) {
+            self::$currentLanguage = $language;
         }
 
         /**
          * Looking for a translation in the database
-         * If $keyword for particular $language not found, return $keyword
+         * If $keyword for $currentLanguage not found and $default is not NULL, return $default
          *
          * @param string $keyword keyword code
-         * @param string $language language code
+         * @param string $default text
          * @return string
          */
-        public static function tr($keyword, $language) {
+        public static function trs($keyword, $default = NULL) {
             // If keyword not found, insert new keyword to database
             if (!isset(self::$keywords[$keyword])) {
                 KeywordDao::insert($keyword);
@@ -63,11 +56,22 @@
 
             // If the Map for the Language exists (i.e. at least one translation into the Language) and it has the keyword translation
             // Othwerwise use the Map for the Default Language
+            $language = self::$currentLanguage;
             $languageMap = isset(self::$translationMap[$language]) && isset(self::$translationMap[$language][$keyword])
                 ? self::$translationMap[$language] : self::$translationMap[self::DEFAULT_LANGUAGE];
 
-            $result = isset($languageMap[$keyword]) ? $languageMap[$keyword] : $keyword;
+            // Getting the translation text
+            if (isset($languageMap[$keyword])) {
+                $result = $languageMap[$keyword];
+            } else if (!empty($default)) {
+                $result = $default;
+            } else {
+                $result = $keyword;
+            }
+
             return $result;
         }
     }
+
+    Tr::init();
 ?>

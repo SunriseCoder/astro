@@ -6,7 +6,8 @@
     class Language {
         public $id;
         public $code;
-        public $name;
+        public $nameEnglish;
+        public $nameNative;
     }
 
     class Keyword {
@@ -35,7 +36,8 @@
                 $language = new Language();
                 $language->id = $queryRow['id'];
                 $language->code = $queryRow['code'];
-                $language->name = $queryRow['name'];
+                $language->nameEnglish = $queryRow['name_english'];
+                $language->nameNative = $queryRow['name_native'];
 
                 $languages[$language->id] = $language;
             }
