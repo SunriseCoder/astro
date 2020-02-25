@@ -38,7 +38,7 @@ function renderTranslationData() {
         createElementWithText('td', keyword.code, tr);
         for (var j = 0; j < languages.length; j++) {
             var language = languages[j];
-            var translation = keywordMap[language.id];
+            var translation = keywordMap == undefined ? undefined : keywordMap[language.id];
             var element;
             if (translation == undefined) {
                 element = createElement('td', tr);
@@ -65,7 +65,7 @@ function matchFilters(keyword, keywordMap) {
             continue;
         }
 
-        var translation = keywordMap[language.id];
+        var translation = keywordMap == undefined ? undefined : keywordMap[language.id];
 
         // Skipping empty values
         if (translation == undefined || translation == null) {
@@ -96,8 +96,8 @@ function matchFilters(keyword, keywordMap) {
 function editTranslation(keywordId, languageId) {
     clearEditForm();
 
-    var translation = translationsMap[keywordId][languageId];
-    if (translation != undefined && translation != null) {
+    var translation = translationsMap[keywordId] == undefined ? undefined : translationsMap[keywordId][languageId];
+    if (translation != undefined) {
         document.getElementById('translationId').value = translation.id;
     }
     document.getElementById('keywordId').value = keywordId;

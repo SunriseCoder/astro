@@ -4,39 +4,53 @@
     class Tr {
         const DEFAULT_LANGUAGE = 'en';
 
-        private static $languages;
-        private static $keywords;
-        private static $translationMap;
+        private static $keywordsById;
+        private static $keywordsByCode;
+        private static $languagesById;
+        private static $languagesByCode;
+        private static $translationMapByCodes;
 
         private static $currentLanguage;
 
         public static function init() {
             self::$currentLanguage = self::DEFAULT_LANGUAGE;
 
-            self::$languages = LanguageDao::getAll();
-            self::$keywords = KeywordDao::getAll();
-            $translations = TranslationDao::getAll();
+            // Keywords
+            self::$keywordsById = KeywordDao::getAll();
+            self::$keywordsByCode = [];
+            foreach (self::$keywordsById as $keyword) {
+                self::$keywordsByCode[$keyword->code] = $keyword;
+            }
+
+            // Languages
+            self::$languagesById = LanguageDao::getAll();
+            self::$languagesByCode = [];
+            foreach (self::$languagesById as $language) {
+                self::$languagesByCode[$language->code] = $language;
+            }
 
             // Translation Map by Language, Keyword
-            self::$translationMap = [];
-            self::$translationMap[self::DEFAULT_LANGUAGE] = [];
+            $translations = TranslationDao::getAll();
+            self::$translationMapByCodes = [];
+            self::$translationMapByCodes[self::DEFAULT_LANGUAGE] = [];
             foreach ($translations as $translation) {
-                $language = self::$languages[$translation->languageId];
-                $translationLanguageMap = isset(self::$translationMap[$language->code]) ? self::$translationMap[$language->code] : [];
+                $language = self::$languagesById[$translation->languageId];
+                $translationLanguageMap = isset(self::$translationMapByCodes[$language->code]) ? self::$translationMapByCodes[$language->code] : [];
 
-                $keyword = self::$keywords[$translation->keywordId];
+                $keyword = self::$keywordsById[$translation->keywordId];
                 $translationLanguageMap[$keyword->code] = $translation->text;
 
-                self::$translationMap[$language->code] = $translationLanguageMap;
+                self::$translationMapByCodes[$language->code] = $translationLanguageMap;
             }
         }
 
         public static function getLanguages() {
-            return self::$languages;
+            return self::$languagesById;
         }
 
         public static function setCurrentLanguage($language) {
-            self::$currentLanguage = $language;
+            self::$currentLanguage = isset(self::$languagesByCode[$language])
+                ? self::$languagesByCode[$language] : self::$languagesByCode[self::DEFAULT_LANGUAGE];
         }
 
         /**
@@ -66,7 +80,7 @@
          */
         public static function trs($keyword, $default = NULL) {
             // If keyword not found, insert new keyword to database
-            if (!isset(self::$keywords[$keyword])) {
+            if (!isset(self::$keywordsByCode[$keyword])) {
                 KeywordDao::insert($keyword);
                 return $keyword;
             }
@@ -74,8 +88,8 @@
             // If the Map for the Language exists (i.e. at least one translation into the Language) and it has the keyword translation
             // Othwerwise use the Map for the Default Language
             $language = self::$currentLanguage;
-            $languageMap = isset(self::$translationMap[$language]) && isset(self::$translationMap[$language][$keyword])
-                ? self::$translationMap[$language] : self::$translationMap[self::DEFAULT_LANGUAGE];
+            $languageMap = isset(self::$translationMapByCodes[$language->code]) && isset(self::$translationMapByCodes[$language->code][$keyword])
+                ? self::$translationMapByCodes[$language->code] : self::$translationMapByCodes[self::DEFAULT_LANGUAGE];
 
             // Getting the translation text
             if (isset($languageMap[$keyword])) {
