@@ -40,6 +40,23 @@
         }
 
         /**
+         * Format the translation text with the placeholders like {0}
+         * If the pattern for the $keyword was not found, using $default
+         * $parameters is a map with keys as placeholder text and value is the replacement
+         *
+         * @param string $keyword
+         * @param array $parameters
+         * @param string $default
+         */
+        public static function format($keyword, $parameters, $default = NULL) {
+            $result = self::trs($keyword, $default);
+            foreach ($parameters as $key => $value) {
+                $result = str_replace('{'.$key.'}', $value, $result);
+            }
+            return $result;
+        }
+
+        /**
          * Looking for a translation in the database
          * If $keyword for $currentLanguage not found and $default is not NULL, return $default
          *

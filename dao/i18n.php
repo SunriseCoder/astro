@@ -80,6 +80,13 @@
             return $translations;
         }
 
+        public static function getByKeywordAndLanguage($keywordId, $languageId) {
+            $sql = 'SELECT * FROM i18n_translations WHERE keyword_id = ? AND language_id = ? ORDER BY id';
+            $queryResult = Db::prepQuery($sql, 'ii', [$keywordId, $languageId]);
+            $translations = self::fetchAll($queryResult);
+            return $translations;
+        }
+
         public static function fetchAll($queryResult) {
             $translations = [];
             foreach ($queryResult as $queryRow) {
@@ -92,6 +99,18 @@
                 $translations[$translation->id] = $translation;
             }
             return $translations;
+        }
+
+        public static function insert($translation) {
+            $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text) VALUES (?, ?, ?)';
+            $result = Db::prepStmt($sql, 'iis', [$translation->keywordId, $translation->languageId, $translation->text]);
+            return $result;
+        }
+
+        public static function update($translation) {
+            $sql = 'UPDATE i18n_translations SET text = ? WHERE id = ?';
+            $result = Db::prepStmt($sql, 'si', [$translation->text, $translation->id]);
+            return $result;
         }
     }
 ?>

@@ -17,6 +17,25 @@
     }
 
     class Utils {
+        /**
+         * Checks that all elements $parameters are set in $array
+         *
+         * @param array $array
+         * @param array $parameters
+         * @return TRUE only if ALL $parameters are set
+         */
+        public static function areSet($array, $parameters) {
+            if (!isset($array)) {
+                return FALSE;
+            }
+            foreach ($parameters as $parameter) {
+                if (!isset($array[$parameter])) {
+                    return FALSE;
+                }
+            }
+            return TRUE;
+        }
+
         public static function redirect($url) {
             header("Location: ".$url, true);
             exit;
