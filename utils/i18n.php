@@ -82,7 +82,19 @@
             // If keyword not found, insert new keyword to database
             if (!isset(self::$keywordsByCode[$keyword])) {
                 KeywordDao::insert($keyword);
-                return $keyword;
+
+                // Insering default value as translation for default language
+                if ($default != NULL) {
+                    $translation = new Translation();
+                    $translation->keywordId = Db::insertedId();
+                    $language = self::$languagesByCode[self::DEFAULT_LANGUAGE];
+                    $translation->languageId = $language->id;
+                    $translation->text = $default;
+                    TranslationDao::insert($translation);
+                }
+
+                $result = $default == NULL ? $keyword : $default;
+                return $result;
             }
 
             // If the Map for the Language exists (i.e. at least one translation into the Language) and it has the keyword translation
