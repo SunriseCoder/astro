@@ -10,25 +10,80 @@ function refreshTranslationData() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            translationData = JSON.parse(this.responseText);
-            renderTranslationData();
+            data = JSON.parse(this.responseText);
+            updateTranslationData(data);
         }
     };
     xhttp.open("GET", "translation_ajax.php", true);
     xhttp.send();
-
-    renderTranslationData();
 }
 
-function renderTranslationData() {
+function updateTranslationData(data) {
+    translationData = data;
+    updateLanguageFilters();
+    renderTranslationTable();
+}
+
+function updateLanguageFilters() {
+    var allLanguages = translationData.languages;
+
+    // Save Language Filters state before its removal
+    var state = [];
+    var languageFilter = document.getElementById('languageFilter');
+    var children = Array.from(languageFilter.childNodes);
+    for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        if (child.tagName == 'INPUT' && child.type == 'button') {
+            // Skipping buttons
+            continue;
+        }
+        if (child.id && child.id.startsWith('languageFilter-') && child.checked) {
+            state[child.id.replace('languageFilter-', '')] = true;
+        }
+        languageFilter.removeChild(child);
+    }
+
+    // Restore Language Filters state after creation them for new Languages
+    for (var i = 0; i < allLanguages.length; i++) {
+        var language = allLanguages[i];
+        if (language == undefined) {
+            continue;
+        }
+
+        var element = createElement('input', languageFilter);
+        element.setAttribute('id', 'languageFilter-' + language.id);
+        element.setAttribute('type', 'checkbox');
+        if (state[language.id]) {
+            element.setAttribute('checked', 'checked');
+        }
+        element.setAttribute('onclick', 'renderTranslationTable();');
+
+        createTextElement(language.nameEnglish, languageFilter);
+    }
+}
+
+function selectAllLanguageFilters(checked) {
+    var languageFilter = document.getElementById('languageFilter');
+    for (var i = 0; i < languageFilter.children.length; i++) {
+        var child = languageFilter.children[i];
+        if (child.tagName == 'INPUT' && child.type == 'button') {
+            // Skipping buttons
+            continue;
+        }
+        child.checked = checked;
+    }
+
+    renderTranslationTable();
+}
+
+function renderTranslationTable() {
     var translationRoot = document.getElementById('translationsRoot');
     translationRoot.innerHTML = '';
 
     var keywords = translationData.keywords;
     keywordsMap = mapById(keywords);
 
-    var languages = translationData.languages;
-    languagesMap = mapById(languages);
+    var languages = getFilteredLanguages();
 
     var translations = translationData.translations;
     translationsMap = createTranslationsMap(translationData.translations);
@@ -55,6 +110,9 @@ function renderTranslationData() {
         createElementWithText('td', keyword.code, tr);
         for (var j = 0; j < languages.length; j++) {
             var language = languages[j];
+            if (language == undefined) {
+                continue;
+            }
             var translation = keywordMap == undefined ? undefined : keywordMap[language.id];
             var element;
             if (translation == undefined) {
@@ -70,10 +128,29 @@ function renderTranslationData() {
     clearEditForm();
 }
 
+function getFilteredLanguages() {
+    var allLanguages = translationData.languages;
+    var languages = [];
+    for (var i = 0; i < allLanguages.length; i++) {
+        var language = allLanguages[i];
+        var filterElement = document.getElementById('languageFilter-' + language.id);
+        if (filterElement != undefined && filterElement.checked) {
+            languages.push(language);
+        }
+    }
+    languagesMap = mapById(languages);
+    return languagesMap;
+}
+
 function matchFilters(keyword, keywordMap) {
     var textFilterValue = document.getElementById('textFilter').value;
     var emptyCellsOnlyFilterValue = document.getElementById('emptyCellsOnlyFilter').checked;
     var emptyRowsOnlyFilterValue = document.getElementById('emptyRowsOnlyFilter').checked;
+
+    // If no Languages selected in the Filter, keywords cannot be empty
+    if (emptyRowsOnlyFilterValue && languagesMap.length == 0) {
+        return false;
+    }
 
     var foundEmpty = false;
     var foundMatch = textFilterValue.length >= 2 && keyword.code.toLowerCase().includes(textFilterValue.toLowerCase());
@@ -169,9 +246,9 @@ function saveTranslation() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            translationData = JSON.parse(this.responseText);
             clearEditForm();
-            renderTranslationData();
+            data = JSON.parse(this.responseText);
+            updateTranslationData(data);
         }
     };
     xhttp.open("POST", "translation_ajax.php", true);

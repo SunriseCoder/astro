@@ -27,6 +27,7 @@
 
                     <? /* Body Area Start */ ?>
 
+                    <!-- Edit Form -->
                     <div id="editFormDiv"></div>
                     <form id="translationForm">
                         <input id="translationId" type="hidden" name="id" value="" />
@@ -50,12 +51,19 @@
                         <input type="button" value="Clear" onclick="clearEditForm();" />
                     </form>
 
+                    <!-- Table Filters -->
                     <input type="button" value="Refresh" onclick="refreshTranslationData();" />
-                    Filter: <input id="textFilter" type="text" size="20" oninput="renderTranslationData();" />
-                    <input id="emptyCellsOnlyFilter" type="checkbox" onclick="renderTranslationData();" />Empty Cells Only
-                    <input id="emptyRowsOnlyFilter" type="checkbox" onclick="renderTranslationData();" />Empty Rows Only
+                    Filter: <input id="textFilter" type="text" size="20" oninput="renderTranslationTable();" />
+                    <input id="emptyCellsOnlyFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Cells Only
+                    <input id="emptyRowsOnlyFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Rows Only<br />
+                    <div id="languageFilter">
+                        <input type="button" value="All" onclick="selectAllLanguageFilters(true);" />
+                        <input type="button" value="None" onclick="selectAllLanguageFilters(false);" />
+                    </div>
 
+                    <!-- Table Placeholder -->
                     <div id="translationsRoot"></div>
+
                     <?php
                         if (!class_exists('Json')) {
                             include $_SERVER["DOCUMENT_ROOT"].'/utils/json.php';
