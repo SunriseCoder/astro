@@ -1,7 +1,5 @@
 <?php
-    if (!class_exists('Tr')) {
-        include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php';
-    }
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
     echo '<ul>';
     echo '<li><a href="../">'.Tr::trs('menu.main', 'Main').'</a></li>';

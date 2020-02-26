@@ -27,6 +27,7 @@
 
                     <? /* Body Area Start */ ?>
 
+                    <div id="editFormDiv"></div>
                     <form id="translationForm">
                         <input id="translationId" type="hidden" name="id" value="" />
                         <input id="keywordId" type="hidden" name="keyword_id" value="" />
@@ -45,11 +46,14 @@
                                 <td><textarea id="translationCell" name="text" rows="10" cols="100"></textarea></td>
                             </tr>
                         </table>
-                        <input id="editFormSubmit" type="button" value="Save" onclick="saveTranslation()" />
+                        <input id="editFormSubmit" type="button" value="Save" onclick="saveTranslation();" />
+                        <input type="button" value="Clear" onclick="clearEditForm();" />
                     </form>
 
+                    <input type="button" value="Refresh" onclick="refreshTranslationData();" />
                     Filter: <input id="textFilter" type="text" size="20" oninput="renderTranslationData();" />
-                    Empty Only <input id="emptyOnlyFilter" type="checkbox" onclick="renderTranslationData();" />
+                    <input id="emptyCellsOnlyFilter" type="checkbox" onclick="renderTranslationData();" />Empty Cells Only
+                    <input id="emptyRowsOnlyFilter" type="checkbox" onclick="renderTranslationData();" />Empty Rows Only
 
                     <div id="translationsRoot"></div>
                     <?php
@@ -57,15 +61,8 @@
                             include $_SERVER["DOCUMENT_ROOT"].'/utils/json.php';
                         }
 
-                        $data = [];
-                        $data['keywords'] = array_values(KeywordDao::getAll());
-                        $data['languages'] = array_values(LanguageDao::getAll());
-                        $data['translations'] = array_values(TranslationDao::getAll());
-
                         echo '<script>';
-                        echo 'var translationDataStr = \''.Json::encode($data).'\';';
-                        echo 'translationData = JSON.parse(translationDataStr);';
-                        echo 'renderTranslationData();';
+                        echo 'refreshTranslationData();';
                         echo '</script>';
                     ?>
 

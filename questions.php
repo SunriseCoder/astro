@@ -38,11 +38,9 @@
                         if ($alreadyAnswered) {
                             echo 'Sorry, but you already have taken part in the survey';
                         } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                            $errors = AnswerSessionDao::saveAnswers();
-                            if ($errors) {
-                                foreach ($errors as $error) {
-                                    echo '<font color="red">'.$error.'</font><br />';
-                                }
+                            $error = AnswerSessionDao::saveAnswers();
+                            if ($error) {
+                                echo '<font color="red">'.$error.'</font><br />';
                             } else {
                                 echo 'Thank you for participating the survey.';
                             }

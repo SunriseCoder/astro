@@ -1,7 +1,6 @@
 <?php
-    if (!class_exists('Db')) {
-        include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php';
-    }
+    if (!class_exists('Db')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php'; }
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
     class Answer {
         public $id;
@@ -245,24 +244,25 @@
 
                 // Checking that Origin Session does exists
                 if (!isset($answerSession)) {
-                    return '<font color="red">Original AnswerSession does not exists</font><br />';
+                    return Tr::format('error.answerSession.originNotFound', [$originId], 'Original AnswerSession with ID: {0} was not found');
                 }
 
                 // Checking that the Astrologer trying to guess a Participant's answers, not the Astrologer's answers
                 if (isset($answerSession->originId)) {
-                    return '<font color="red">Original AnswerSession is not Original, but an Astrologer\'s answers</font><br />';
+                    return Tr::format('error.answerSession.originIsNotOrigin', [$originId],
+                        'Original AnswerSession with ID: {0} is not Original, but an Astrologer\'s answers');
                 }
 
                 // Checking that the Astrologer doesn't trying to solve his own answers
                 $currentUser = LoginDao::getCurrentUser();
                 if ($answerSession->userId == $currentUser->id) {
-                    return '<font color="red">You are trying to solve your own answers</font><br />';
+                    return Tr::trs('error.astrologer.guessOwnAnswers', 'You are trying to solve your own answers');
                 }
 
                 // Checking that the Astrologer didn't already solve this Answer Set
                 $alreadyAnswered = self::hasCurrentAstrologerAnsweredAlready($originId);
                 if ($alreadyAnswered) {
-                    return '<font color="red">You have already solve Answer Session with ID: '.$originId.'</font><br />';
+                    return Tr::format('error.answerSession.astrologerAlreadyGuessed', [$originId], 'You have already solved Answer Session with ID: {0}');
                 }
             }
 
@@ -297,7 +297,7 @@
                 foreach ($_POST as $key => $value) {
                     // Don't save empty Answers
                     if (empty($value)) {
-                        Logger::warning('Skipping Answer "'.$key.'" due to empty Value');
+                        Logger::warning(Tr::format('warning.answer.skipEmptyValue', [$key], 'Skipping Answer "{0}" due to empty Value'));
                         continue;
                     }
 
@@ -309,7 +309,8 @@
                         $questionId = $matches[1];
                         $question = $questions[$questionId];
                         if (!$question) {
-                            Logger::warning('Skipping Answer "'.$key.'" -> "'.$value.'" due to Question with ID '.$questionId.' was not found');
+                            Logger::warning(Tr::format('warning.answer.questionNotFound', [$key, $value, $questionId],
+                                'Skipping Answer "{0}" -> "{1}" due to Question with ID {2} was not found'));
                             continue;
                         }
                         $answer->question = $question;
@@ -321,13 +322,14 @@
                                 $questionOption = $questionOptions[$questionOptionId];
                                 // Checking that we have existing QuestionOption and it belongs to the correct Question
                                 if (!$questionOption) {
-                                    Logger::warning('Skipping Answer "'.$key.'" -> "'.$value.'" due to QuestionOption with ID '.$questionOptionId.' does not exists');
+                                    Logger::warning(Tr::format('warning.answer.questionOptionNotFound', [$key, $value, $questionOptionId],
+                                        'Skipping Answer "{0}" -> "{1}" due to QuestionOption with ID {2} was not found'));
                                     continue;
                                 }
 
                                 if ($questionOption->questionId != $question->id) {
-                                    Logger::warning('Skipping Answer "'.$key.'" -> "'.$value.'" due to QuestionOption with ID '.$questionOptionId.
-                                        'does not belongs to Question with ID '.$questionId);
+                                    Logger::warning(Tr::format('warning.answer.questionOptionWrongQuestion', [$key, $value, $questionOptionId, $questionId],
+                                        'Skipping Answer "{0}" -> "{1}" due to QuestionOption with ID {2} does not belongs to the Question with ID {3}'));
                                     continue;
                                 }
                                 $answer->questionOption = $questionOption;
@@ -342,7 +344,8 @@
                                 $answer->value = $value;
                                 break;
                             default:
-                                Logger::warning('Skipping Answer "'.$key.'" -> "'.$value.'" due to unknown QuestionType "'.$question->type->code.'"');
+                                Logger::warning(Tr::format('warning.answer.unknownQuestionType', [$key, $value, $question->type->code],
+                                    'Skipping Answer "{0}" -> "{1}" due to unknown QuestionType "{2}"'));
                                 continue;
                         }
 
@@ -355,12 +358,14 @@
                         $questionId = $matches[1];
                         $question = $questions[$questionId];
                         if (!$question) {
-                            Logger::warning('Skipping Answer "'.$key.'" -> "'.$value.'" due to Question with ID '.$questionId.' does not exists');
+                            Logger::warning(Tr::format('warning.answer.questionNotFound', [$key, $value, $questionId],
+                                'Skipping Answer "{0}" -> "{1}" due to Question with ID {2} was not found'));
                             continue;
                         }
 
                         if ($question->type->code != QuestionType::Complex) {
-                            Logger::warning('Skipping Answer "'.$key.'" -> "'.$value.'" due to Question with ID '.$questionId.' has Type which is not Complex');
+                            Logger::warning(Tr::format('warning.answer.questionTypeIsNotComplex', [$key, $value, $questionId],
+                                'Skipping Answer "{0}" -> "{1}" due to the Type of Question with ID {2} is not "Complex"'));
                             continue;
                         }
 

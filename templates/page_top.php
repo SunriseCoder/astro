@@ -7,7 +7,7 @@
         }
     </script>
     <?php
-        include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php';
+        if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
         // Choose Language Dropdown list
         echo '<select id="language" onchange="setLanguage(this);">';

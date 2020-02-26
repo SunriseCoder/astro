@@ -1,12 +1,8 @@
 <?php
 
-if (!class_exists('Db')) {
-    include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php';
-}
-
-if (!class_exists('Utils')) {
-    include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php';
-}
+if (!class_exists('Db')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php'; }
+if (!class_exists('Utils')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php'; }
+if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
 class Permission {
     // Administration
@@ -172,7 +168,7 @@ class UserDao {
         if ($result) {
             $result = Email::sendPassword($user->email, $password);
         } else {
-            Logger::error('Error due to insert User into the Database');
+            Logger::error(Tr::trs('error.user.insertToDatabase', 'Error: Failed to insert User into the Database'));
         }
 
         return $result;
@@ -366,12 +362,12 @@ class LoginDao {
         // Loading User
         $user = UserDao::findUserByEmail($email);
         if ($user == NULL) {
-            return 'Error: User with the E-Mail not found';
+            return Tr::format('error.user.notFoundByEmail', [$email], 'Error: User with the E-Mail "{0}" not found');
         }
 
         // Checking Locked
         if (!$user->active) {
-            return 'Error: User is locked';
+            return Tr::format('error.user.locked', [$user->id], 'Error: User with ID {0} is locked');
         }
 
         // Checking Password
@@ -379,7 +375,7 @@ class LoginDao {
         // TODO Change here if the Salt or something else will be added
         $actual = strtolower(md5($pass));
         if ($stored != $actual) {
-            return 'Error: Password is incorrect';
+            return Tr::trs('error.user.wrongPassword', 'Error: Password is incorrect');
         }
 
         self::$currentUser = $user;

@@ -1,8 +1,6 @@
 <ul>
     <?php
-        if (!class_exists('Tr')) {
-            include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php';
-        }
+        if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
         $user = LoginDao::getCurrentUser();
 

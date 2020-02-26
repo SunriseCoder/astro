@@ -3,6 +3,23 @@ var keywordsMap;
 var languagesMap;
 var translationsMap;
 
+function refreshTranslationData() {
+    clearEditForm();
+
+    // Load data via Ajax
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            translationData = JSON.parse(this.responseText);
+            renderTranslationData();
+        }
+    };
+    xhttp.open("GET", "translation_ajax.php", true);
+    xhttp.send();
+
+    renderTranslationData();
+}
+
 function renderTranslationData() {
     var translationRoot = document.getElementById('translationsRoot');
     translationRoot.innerHTML = '';
@@ -55,7 +72,8 @@ function renderTranslationData() {
 
 function matchFilters(keyword, keywordMap) {
     var textFilterValue = document.getElementById('textFilter').value;
-    var emptyOnlyFilterValue = document.getElementById('emptyOnlyFilter').checked;
+    var emptyCellsOnlyFilterValue = document.getElementById('emptyCellsOnlyFilter').checked;
+    var emptyRowsOnlyFilterValue = document.getElementById('emptyRowsOnlyFilter').checked;
 
     var foundEmpty = false;
     var foundMatch = textFilterValue.length >= 2 && keyword.code.toLowerCase().includes(textFilterValue.toLowerCase());
@@ -67,10 +85,13 @@ function matchFilters(keyword, keywordMap) {
 
         var translation = keywordMap == undefined ? undefined : keywordMap[language.id];
 
-        // Skipping empty values
-        if (translation == undefined || translation == null) {
+        if (translation == undefined) {
+            // No need to apply any other filters to the empty values
             foundEmpty = true;
             continue;
+        } else if (emptyRowsOnlyFilterValue) {
+            // If any non-empty value found with Empty Rows Only filter, the row doesn't match
+            return false;
         }
 
         // Text Filter
@@ -79,8 +100,8 @@ function matchFilters(keyword, keywordMap) {
         }
     }
 
-    // Empty Only Checkbox
-    if (emptyOnlyFilterValue && !foundEmpty) {
+    // Empty Cells Only Checkbox
+    if (emptyCellsOnlyFilterValue && !foundEmpty) {
         return false;
     }
 
@@ -117,6 +138,7 @@ function editTranslation(keywordId, languageId) {
     }
 
     document.getElementById('editFormSubmit').disabled = false;
+    window.scrollTo(0, 0); // Scroll to the top of the page
 }
 
 function clearEditForm() {
@@ -148,14 +170,13 @@ function saveTranslation() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             translationData = JSON.parse(this.responseText);
+            clearEditForm();
             renderTranslationData();
         }
     };
     xhttp.open("POST", "translation_ajax.php", true);
     xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhttp.send(query);
-
-    clearEditForm();
 }
 
 function mapById(elements) {
