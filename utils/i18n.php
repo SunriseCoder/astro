@@ -1,5 +1,5 @@
 <?php
-    include $_SERVER["DOCUMENT_ROOT"].'/dao/i18n.php';
+    if (!class_exists('Language')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/i18n.php'; }
 
     class Tr {
         const DEFAULT_LANGUAGE = 'en';

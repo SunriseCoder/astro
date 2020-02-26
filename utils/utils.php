@@ -1,4 +1,6 @@
 <?php
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
+
     class DateTimeUtils {
         public static function fromDatabase($dbValue) {
             $result = DateTime::createFromFormat("Y-m-d H:i:s", $dbValue);
@@ -67,10 +69,11 @@
 
     class Email {
         public static function sendPassword($email, $pass) {
-            $subject = 'Your password for Astrology Survey';
-            $message = "This E-Mail is sent because you have registered on the website astro.chaitanya.academy\n\n".
-                "Your E-Mail: $email\nYour password: $pass\n".
-                "Please use this link to Sign In: http://astro.chaitanya.academy/login.php\n\nChaitanya Academy";
+            $subject = Tr::trs('registration.password.email.subject', 'Your password for the Astrology Survey');
+            $message = Tr::format('registration.password.email.text', [$email, $pass],
+                "This E-Mail is sent because you have registered on the website http://astro.chaitanya.academy/\n\n".
+                "Your E-Mail: {0}\nYour password: {1}\n".
+                "Please use this link to Sign In: http://astro.chaitanya.academy/login.php\n\nChaitanya Academy");
             $headers = 'From: noreply@chaitanya.academy';
             $result = mail($email, $subject, $message, $headers);
             return $result;

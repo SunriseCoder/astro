@@ -1,7 +1,7 @@
 <?php
     // TODO Check Login and Permissions, otherwise redirect to main page in admin section
 
-    include $_SERVER["DOCUMENT_ROOT"].'/dao/i18n.php';
+    if (!class_exists('Language')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/i18n.php'; }
     if (!class_exists('Utils')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php'; }
     if (!class_exists('Json')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/json.php'; }
 
