@@ -1,7 +1,10 @@
+<?php
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
+?>
 <html>
     <?
-        $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'Contacts';
+        $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
+        $page_title = Tr::trs('page.contacts.pageTitle', 'Contacts');
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
     ?>
@@ -22,13 +25,13 @@
 
                     <? /* Body Area Start */ ?>
 
-                    <p>Project and survey administration: Vilas Manjari Dasi<br />
-                    E-Mail: <a href="mailto:vilasmanjari108@gmail.com">vilasmanjari108@gmail.com</a><br />
-                    WhatsApp: +905534440889</p>
+                    <p><?php echo Tr::trs('contacts.roles.administration', 'Project and survey administration'); ?>: Vilas Manjari Dasi<br />
+                    <?php echo Tr::trs('word.email', 'E-Mail') ?>: <a href="mailto:vilasmanjari108@gmail.com">vilasmanjari108@gmail.com</a><br />
+                    <?php echo Tr::trs('word.whatsapp', 'WhatsApp'); ?>: +905534440889</p>
 
-                    <p>Technical questions: Giridhari Das<br />
-                    E-Mail: <a href="mailto:sunrisecoder@gmail.com">sunrisecoder@gmail.com</a><br />
-                    WhatsApp: +79256237577</p>
+                    <p><?php echo Tr::trs('contacts.roles.techical', 'Technical questions'); ?>: Giridhari Das<br />
+                    <?php echo Tr::trs('word.email', 'E-Mail') ?>: <a href="mailto:sunrisecoder@gmail.com">sunrisecoder@gmail.com</a><br />
+                    <?php echo Tr::trs('word.whatsapp', 'WhatsApp'); ?>: +79256237577</p>
 
                     <? /* Body Area End */ ?>
 

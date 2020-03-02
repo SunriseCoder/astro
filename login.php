@@ -6,6 +6,8 @@
         exit;
     }
 
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['email']) && isset($_POST['password'])) {
             $email = $_POST['email'];
@@ -21,8 +23,8 @@
 
 <html>
     <?
-        $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'Login';
+        $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
+        $page_title = Tr::trs('page.login.pageTitle', 'Login');
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
     ?>

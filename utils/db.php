@@ -17,6 +17,7 @@ class Db {
 
         // Create connection
         self::$conn = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
+        self::$conn->set_charset('utf8');
 
         // Check connection
         if (self::$conn->connect_errno) {

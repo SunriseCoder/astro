@@ -7,7 +7,23 @@
         public static function runMigration() {
             $allQuestions = QuestionDao::getAll();
             $allQuestionOptions = QuestionOptionDao::getAll();
-            // Fill Questions with their QuestionOptions
+
+            // Injecting Text and Markup to the Questions
+            $queryResult = Db::query('SELECT id, text, markup FROM questions ORDER BY id');
+            foreach ($queryResult as $queryRow) {
+                $question = $allQuestions[$queryRow['id']];
+                $question->text = $queryRow['text'];
+                $question->markup = $queryRow['markup'];
+            }
+
+            // Inject Text to the QuestionOptions
+            $queryResult = Db::query('SELECT id, text FROM question_options ORDER BY id');
+            foreach ($queryResult as $queryRow) {
+                $questionOption = $allQuestionOptions[$queryRow['id']];
+                $questionOption->text = $queryRow['text'];
+            }
+
+            // Filling Questions with their QuestionOptions
             foreach ($allQuestionOptions as $questionOption) {
                 $question = $allQuestions[$questionOption->questionId];
                 $question->options[$questionOption->id] = $questionOption;
@@ -19,8 +35,6 @@
                 // Migrating Question Text and Markup
                 if (isset($question->text) && !empty($question->text)) {
                     TranslationDao::saveQuestion($question);
-                    $question->text = NULL;
-                    $question->markup = NULL;
 
                     // Update Question
                     $sql = 'UPDATE questions SET text = NULL, markup = NULL WHERE id = ?';
@@ -30,7 +44,6 @@
                 if (isset($question->options)) {
                     foreach ($question->options as $questionOption) {
                         TranslationDao::saveQuestionOption($questionOption);
-                        $questionOption->text = NULL;
                         $sql = 'UPDATE question_options SET text = NULL WHERE id = ?';
                         Db::prepStmt($sql, 'i', [$questionOption->id]);
                     }

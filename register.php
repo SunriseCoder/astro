@@ -1,7 +1,10 @@
+<?php
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
+?>
 <html>
     <?
-        $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'Astrology';
+        $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
+        $page_title = Tr::trs('page.register.pageTitle', 'Registration');
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
     ?>
@@ -24,55 +27,32 @@
 
                     <?php
                         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                            if (isset($_POST['name']) && isset($_POST['email'])) {
-                                $name = $_POST['name'];
-                                $email = $_POST['email'];
-                                $nameIsFree = UserDao::isNameFree($name);
-                                if (!$nameIsFree) {
-                                    echo '<font color="red">Name is already in use.</font>';
-                                }
-
-                                $emailIsFree = UserDao::isEmailFree($email);
-                                if (!$emailIsFree) {
-                                    echo '<font color="red">E-mail is already in use.</font>';
-                                }
-
-                                $user = new User();
-                                $user->name = $name;
-                                $user->email = $email;
-                                $user->generatePassword();
-                                $result = UserDao::create($user);
-
-                                if ($result) {
-                                    echo '<font color="green">Your password has been sent via E-Mail.</font>';
-                                } else {
-                                    echo '<font color="red">Could not create new user, please contact administrator.</font>';
-                                }
+                            $error = UserDao::register($_POST['name'], $_POST['email']);
+                            if ($error) {
+                                echo '<font color="red">'.$error.'</font>';
                             } else {
-                                echo '<font color="red">Name or E-mail is empty.</font>';
+                                echo '<font color="green">'.Tr::trs('page.register.registerSuccessfully', 'Your password has been sent via E-Mail').'</font>';
                             }
                         }
                     ?>
 
-                    <h1>Registration</h1>
-
                     <form action="register.php" method="POST">
                         <table>
                             <tr>
-                                <td>Name:</td>
+                                <td><?php echo Tr::trs('word.name', 'Name'); ?>:</td>
                                 <td>
                                     <input name="name" type="text" />
                                 </td>
                             </tr>
                             <tr>
-                                <td>E-Mail:</td>
+                                <td><?php echo Tr::trs('word.email', 'E-Mail'); ?>:</td>
                                 <td>
                                     <input name="email" type="text" />
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan="2" align="center">
-                                    <input type="submit" value="Register" />
+                                    <input type="submit" value="<?php echo Tr::trs('word.register', 'Register'); ?>" />
                                 </td>
                             </tr>
                         </table>

@@ -144,6 +144,37 @@ class User {
 }
 
 class UserDao {
+    public static function register($name, $email) {
+        if (!isset($name) || empty($name)) {
+            return Tr::trs('page.register.error.emptyName', 'Name is empty');
+        }
+
+        if (!isset($email) || empty($email)) {
+            return Tr::trs('page.register.error.emptyEmail', 'E-Mail is empty');
+        }
+
+        $nameIsFree = UserDao::isNameFree($name);
+        if (!$nameIsFree) {
+            echo Tr::trs('page.register.error.nameIsBusy', 'Name is already taken by someone else');
+        }
+
+        $emailIsFree = UserDao::isEmailFree($email);
+        if (!$emailIsFree) {
+            echo Tr::trs('page.register.error.emailIsBusy', 'E-Mail is already used by someone else');
+        }
+
+        $user = new User();
+        $user->name = $name;
+        $user->email = $email;
+        $user->generatePassword();
+        $result = UserDao::create($user);
+
+        if (!$result) {
+            echo Tr::format('page.register.error.registrationFailed', [$name, $email],
+                'Could not create a new user with Name "{0}" and E-Mail "{1}", please contact an administrator');
+        }
+    }
+
     public static function isNameFree($name) {
         $sql = 'SELECT count(1) as c FROM users WHERE name = ?';
         $users = Db::prepQuery($sql, 's', [$name]);

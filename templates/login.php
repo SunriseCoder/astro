@@ -10,7 +10,7 @@
             echo ' (<a href="/logout.php">'.Tr::trs('word.logout', 'Logout').'</a>)';
         } else {
     ?>
-        <form action="login.php" method="POST">
+        <form action="/login.php" method="POST">
             <table>
                 <tr>
                     <td><?php echo Tr::trs('word.email', 'E-Mail'); ?>:</td>

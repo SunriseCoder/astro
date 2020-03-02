@@ -20,6 +20,7 @@
     $data['keywords'] = array_values(KeywordDao::getAll());
     $data['languages'] = array_values(LanguageDao::getAll());
     $data['translations'] = array_values(TranslationDao::getAll());
+    $data['defaultLanguageId'] = LanguageDao::getDefault()->id;
 
     echo Json::encode($data);
 ?>

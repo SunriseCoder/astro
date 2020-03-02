@@ -211,7 +211,14 @@ function editTranslation(keywordId, languageId) {
 
     var translationCell = document.getElementById('translationCell');
     if (translation) {
+        // Translation into selected Language
         translationCell.value = translation.text;
+    } else if (document.getElementById('copyDefaultLanguageValueIfEmpty').checked) {
+        // Translation into Default Language
+        translation = translationsMap[keywordId] == undefined ? undefined : translationsMap[keywordId][translationData.defaultLanguageId];
+        if (translation) {
+            translationCell.value = translation.text;
+        }
     }
 
     document.getElementById('editFormSubmit').disabled = false;
@@ -233,6 +240,7 @@ function clearEditForm() {
 }
 
 function saveTranslation() {
+    document.getElementById('editFormSubmit').disabled = true;
     var form = document.getElementById('translationForm');
     var query = '';
     for (var i = 0; i < form.elements.length; i++) {
@@ -289,6 +297,16 @@ function createTranslationsMap(translations) {
 
     return resultMap;
 }
+
+function handleHotkey(e) {
+    if (e.ctrlKey && e.keyCode == 13) { // Ctrl + Enter
+        var submitButton = document.getElementById('editFormSubmit');
+        if (!submitButton.disabled) {
+            submitButton.click();
+        }
+    }
+}
+document.addEventListener('keydown', handleHotkey, false);
 
 //TODO Move to Utils Library
 function createElementWithText(name, text, parent) {

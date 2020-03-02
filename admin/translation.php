@@ -50,6 +50,7 @@
                         <input id="editFormSubmit" type="button" value="Save" onclick="saveTranslation();" />
                         <input type="button" value="Clear" onclick="clearEditForm();" />
                         <label id="saveTranslationStatus"></label>
+                        <input id="copyDefaultLanguageValueIfEmpty" type="checkbox" />Copy Default Language Value if empty
                     </form>
 
                     <!-- Table Filters -->
