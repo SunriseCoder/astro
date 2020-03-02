@@ -1,11 +1,13 @@
 <?php
     include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php';
     LoginDao::checkPermissions([Permission::AstrologerAnswering], '/');
+
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 ?>
 <html>
     <?
-        $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'Answer questions as an Astrologer';
+        $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
+        $page_title = Tr::trs('page.astrologerChoose.pageTitle', 'Answer questions as an astrologer - choose answers session');
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
     ?>
@@ -54,11 +56,11 @@
                                     }
                                 }
                                 if (count($questions) > 0) {
-                                    echo '<th>ID</th>';
+                                    echo '<th>'.Tr::trs('word.id', 'ID').'</th>';
                                     foreach ($questions as $question) {
                                         echo '<th>'.$question->text.'</th>';
                                     }
-                                    echo '<th>Status</th>';
+                                    echo '<th>'.Tr::trs('word.status', 'Status').'</th>';
                                 }
 
                                 // Table Content
@@ -85,11 +87,11 @@
                                     echo '<td>';
                                     // Check that the Astrologer doesn't guess his own answers
                                     if ($answerSession->userId == $currentUser->id) {
-                                        echo 'Your answers';
+                                        echo Tr::trs('word.astrologer.yourAnswers', 'Your answers');
                                     } else if (isset($guessedSessionsMapping[$answerSession->id])) {
-                                        echo 'Already guessed';
+                                        echo Tr::trs('word.astrologer.alreadyGuessed', 'Already guessed');
                                     } else {
-                                        echo '<a href="astrologer_answer.php?id='.$answerSession->id.'">New</a>';
+                                        echo '<a href="astrologer_answer.php?id='.$answerSession->id.'">'.Tr::trs('word.new', 'New').'</a>';
                                     }
                                     echo '</td>';
                                     echo '</tr>';
@@ -98,7 +100,7 @@
                                 echo '</table>';
                             }
                         } else {
-                            echo 'No Answers found';
+                            echo Tr::trs('page.astrologerChoose.noAnswersFound', 'No Answers found');
                         }
                     ?>
 

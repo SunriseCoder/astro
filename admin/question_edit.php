@@ -28,251 +28,135 @@
                         // Save Question after Edit
                         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if (isset($_POST['question_id'])) {
-                                $question_id = $_POST['question_id'];
-                                // Update Query
-                                $question_update_sql =
-                                    'UPDATE questions
-                                        SET questionnaire_id = ?,
-                                            question_type_id = ?,
-                                            number = ?,
-                                            text = ?,
-                                            markup = ?,
-                                            position = ?
-                                      WHERE id = ?';
-                                Db::prepStmt($question_update_sql, 'iisssii',
-                                    [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_number'],
-                                        $_POST['question_text'], $_POST['question_markup'], $_POST['question_position'], $question_id]);
+                                $error = QuestionDao::updateFromPost();
                             } else {
-                                // Insert New Question
-                                $question_insert_sql =
-                                    'INSERT INTO questions (questionnaire_id, question_type_id, number, position, text, markup)
-                                          VALUES (?, ?, ?, ?, ?, ?)';
-                                $position = $_POST['question_position'];
-                                if (empty($position)) {
-                                    // Position Calculations
-                                    $position = 10 * QuestionnaireDao::countQuestions($_POST['questionnaire_id']);
-                                }
-                                Db::prepStmt($question_insert_sql, 'iisiss',
-                                    [$_POST['questionnaire_id'], $_POST['question_type_id'], $_POST['question_number'],
-                                        $position, $_POST['question_text'], $_POST['question_markup']]);
-                                $question_id = Db::insertedId();
+                                $error = QuestionDao::insertFromPost();
                             }
 
-                            if (isset($_POST['question_options'])) {
-                                // Saving Question Options
-                                $question_options = $_POST['question_options'];
-                                function question_options_compare($a, $b) {
-                                    return $a['position'] - $b['position'];
-                                }
-                                usort($question_options, 'question_options_compare');
-
-                                $question_options_position = 10;
-                                $survival_ids = array();
-                                foreach($question_options as $question_option) {
-                                    if (isset($question_option['id'])) {
-                                        // Update existing Question Options
-                                        $question_option_update_sql =
-                                            'UPDATE question_options
-                                                SET text = ?,
-                                                    position = ?
-                                              WHERE id = ?';
-                                        Db::prepStmt($question_option_update_sql, 'sii',
-                                            [$question_option['text'], $question_options_position, $question_option['id']]);
-                                        array_push($survival_ids, $question_option['id']);
-                                    } else {
-                                        // Insert new Question Options
-                                        $question_option_insert_sql =
-                                            'INSERT INTO question_options (question_id, position, text)
-                                                  VALUES (?, ?, ?)';
-                                        Db::prepStmt($question_option_insert_sql, 'iis', [$question_id, $question_options_position, $question_option['text']]);
-                                        $last_id = Db::insertedId();
-                                        array_push($survival_ids, $last_id);
-                                    }
-                                    $question_options_position += 10;
-                                }
-
-                                // Delete deleted Question Options from Database
-                                $question_options_select_sql =
-                                    'SELECT id
-                                       FROM question_options
-                                      WHERE question_id = ?';
-                                $question_options_result = Db::prepQuery($question_options_select_sql, 'i', [$question_id]);
-                                foreach ($question_options_result as $question_options_row) {
-                                    $question_option_id = $question_options_row['id'];
-                                    if (!in_array($question_option_id, $survival_ids)) {
-                                        $question_options_delete_sql =
-                                            'DELETE FROM question_options
-                                                   WHERE id = ?';
-                                        Db::prepStmt($question_options_delete_sql, 'i', [$question_option_id]);
-                                    }
-                                }
+                            if (isset($error)) {
+                                echo '<font color="red">Error: '.$error.'</font><br />';
                             } else {
-                                // If Question Options are not set, remove ALL Question Options for this Question
-                                $question_options_delete_sql =
-                                    'DELETE FROM question_options
-                                           WHERE question_id = ?';
-                                Db::prepStmt($question_options_delete_sql, 'i', [$question_id]);
+                                echo '<font color="green">Saved Successfully</font><br />';
                             }
                         }
-
-                        // Queries
-                        $questionnaires_sql =
-                            'SELECT id, name FROM questionnaires';
-
-                        $question_types_sql =
-                            'SELECT id, code, name FROM question_types';
-
-                        $question_sql =
-                            'SELECT q.id as question_id,
-                                    q.number as question_number,
-                                    q.text as question_text,
-                                    q.markup as question_markup,
-                                    q.position as question_position,
-                                    q.questionnaire_id as questionnaire_id,
-                                    q.question_type_id as question_type_id,
-                                    qt.code as question_type_code
-                               FROM questions q
-                          LEFT JOIN question_types qt on qt.id = q.question_type_id
-                              WHERE q.id = ?';
-
-                        $question_options_sql =
-                            'SELECT qo.id as question_option_id,
-                                    qo.position as question_option_position,
-                                    qo.text as question_option_text
-                               FROM question_options qo
-                              WHERE qo.question_id = ?
-                           ORDER BY qo.position';
 
                         if (isset($_GET['id'])) {
-                            $question_id = $_GET['id'];
+                            $questionId = $_GET['id'];
+                            $question = QuestionDao::getById($questionId);
                         }
-
-                        // Parsing Question by given ID
-                        if (isset($question_id)) {
-                            // Question
-                            $question_result = Db::prepQuery($question_sql, 'i', [$question_id]);
-                            if (count($question_result) == 1) {
-                                $question_row = $question_result[0];
-                            } else {
-                                echo 'Question with ID '.$question_id.' is not found';
-                            }
-                        }
-
-                        echo '<form action="" method="post">';
-
-                        echo '<div>Question:</div>';
-                        echo '<table>';
-                        echo '<tr>
-                                <th>Field</th>
-                                <th>Value</th>
-                              </tr>';
-
-                        // Question ID
-                        if (isset($question_row['question_id'])) {
-                            $question_id = $question_row['question_id'];
-                        }
-                        echo '<tr><td>ID</td><td>';
-                        if (isset($question_id)) {
-                            echo '<input type="hidden" name="question_id" value="'.$question_id.'" />'.$question_id;
+                        if (isset($questionId) && !isset($question)) {
+                            echo 'Question with ID: '.$questionId.' is not found';
                         } else {
-                            echo 'New Question';
-                        }
-                        echo '</td></tr>';
+                            echo '<form action="" method="post">';
 
-                        // Question Number
-                        $questionNumber = isset($question_row['question_number']) ? $question_row['question_number'] : '';
-                        echo '<tr><td>Question Number</td><td><input type="text" name="question_number" size="50" value="'.$questionNumber.'" /></td></tr>';
+                            echo '<div>Question:</div>';
+                            echo '<table>';
+                            echo '<tr>
+                                    <th>Field</th>
+                                    <th>Value</th>
+                                  </tr>';
 
-                        // Question Text
-                        $questionText = isset($question_row['question_text']) ? $question_row['question_text'] : '';
-                        echo '<tr><td>Question Text</td><td><input type="text" name="question_text" size="50" value="'.$questionText.'" /></td></tr>';
-
-                        // Question Markup
-                        $questionMarkup = isset($question_row['question_markup']) ? $question_row['question_markup'] : '';
-                        echo '<tr><td>Question Markup</td><td><textarea name="question_markup" rows="10" cols="50">'.$questionMarkup.'</textarea></td></tr>';
-
-                        // Question Position
-                        $questionPosition = isset($question_row['question_position']) ? $question_row['question_position'] : '';
-                        echo '<tr><td>Position in Questionnaire</td><td><input type="text" name="question_position" size="50" value="'.$questionPosition.'" /></td></tr>';
-
-                        // Questionnaire Field
-                        echo '<tr><td>Questionnaire</td><td><select name="questionnaire_id">';
-                        if (isset($_GET['questionnaire_id'])) {
-                            $questionnaire_id = $_GET['questionnaire_id'];
-                        }
-                        if (isset($question_row['questionnaire_id'])) {
-                            $questionnaire_id = $question_row['questionnaire_id'];
-                        }
-                        $questionnaires_result = Db::query($questionnaires_sql);
-                        foreach ($questionnaires_result as $questionnaire_row) {
-                            echo '<option value="'.$questionnaire_row['id'].'"';
-                            if ($questionnaire_id == $questionnaire_row['id']) {
-                                echo ' selected="selected"';
+                            echo '<tr>';
+                            echo '<td>ID</td>';
+                            echo '<td>';
+                            if (isset($question)) {
+                                echo '<input type="hidden" name="question_id" value="'.$question->id.'" />'.$question->id;
+                            } else {
+                                echo 'New Question';
                             }
-                            echo '>'.$questionnaire_row['name'].'</option>';
-                        }
-                        echo '</select></td></tr>';
+                            echo '</td>';
+                            echo '</tr>';
 
-                        // Question Type
-                        echo '<tr><td>Question Type</td><td>';
-                        echo '<select id="question_type_select" name="question_type_id" onchange="questionTypeChanged()">';
-                        $question_types_result = Db::query($question_types_sql);
-                        foreach ($question_types_result as $question_type_row) {
-                            echo '<option question_type_code="'.$question_type_row['code'].'" value="'.$question_type_row['id'].'"';
-                            if (isset($question_row) && $question_row['question_type_id'] == $question_type_row['id']) {
-                                echo ' selected="selected"';
+                            // Question Number
+                            $questionNumber = isset($question) ? $question->number : '';
+                            echo '<tr><td>Question Number</td><td><input type="text" name="question_number" size="50" value="'.$questionNumber.'" /></td></tr>';
+
+                            // Question Text
+                            $questionText = isset($question) ? $question->text : '';
+                            echo '<tr><td>Question Text</td><td><input type="text" name="question_text" size="50" value="'.$questionText.'" /></td></tr>';
+
+                            // Question Markup
+                            $questionMarkup = isset($question) ? $question->markup : '';
+                            echo '<tr><td>Question Markup</td><td><textarea name="question_markup" rows="10" cols="50">'.$questionMarkup.'</textarea></td></tr>';
+
+                            // Question Position
+                            $questionPosition = isset($question) ? $question->position : '';
+                            echo '<tr><td>Position in Questionnaire</td><td><input type="text" name="question_position" size="50" value="'.$questionPosition.'" /></td></tr>';
+
+                            // Questionnaire Field
+                            echo '<tr><td>Questionnaire</td><td><select name="questionnaire_id">';
+                            $questionnaires = QuestionnaireDao::getAll();
+                            $questionnaireId = isset($question) ? $question->questionnaireId : isset($_GET['questionnaire_id']) ? $_GET['questionnaire_id'] : '';
+                            foreach ($questionnaires as $questionnaire) {
+                                echo '<option value="'.$questionnaire->id.'"';
+                                if ($questionnaire->id == $questionnaireId) {
+                                    echo ' selected="selected"';
+                                }
+                                echo '>'.$questionnaire->name.'</option>';
                             }
-                            echo '>'.$question_type_row['name'].'</option>';
-                        }
-                        echo '</select></td></tr>';
-                        echo '</table>';
+                            echo '</select></td></tr>';
 
-                        echo '<div>Answer options:</div>';
-                        echo '<table id="question_options_table">';
-                        echo '<tr>
-                                <th>ID</th>
-                                <th>Text</th>
-                                <th>Position</th>
-                                <th>Actions</th>
-                              </tr>';
-
-                        // Question Options
-                        if (isset($question_row['question_type_code'])) {
-                            $question_type = $question_row['question_type_code'];
-                        }
-                        if (isset($question_type) && $question_type == 'SINGLE_CHOICE') {
-                            $question_options_result = Db::prepQuery($question_options_sql, 'i', [$question_id]);
-
-                            // Questions List
-                            $question_options_counter = 0;
-                            foreach ($question_options_result as $question_options_row) {
-                                echo '<tr row_number="'.$question_options_counter.'">';
-
-                                // Question Option ID
-                                $qo_id = $question_options_row['question_option_id'];
-                                $name_id = 'question_options['.$question_options_counter.'][id]';
-                                echo '<td><input type="hidden" name="'.$name_id.'" value="'.$qo_id.'" />'.$qo_id.'</td>';
-
-                                // Question Option Text
-                                $qo_text = $question_options_row['question_option_text'];
-                                $name_text = 'question_options['.$question_options_counter.'][text]';
-                                echo '<td><input type="text" name="'.$name_text.'" value="'.$qo_text.'" size="30" /></td>';
-
-                                // Question Option Position
-                                $qo_position = $question_options_row['question_option_position'];
-                                $name_position = 'question_options['.$question_options_counter.'][position]';
-                                echo '<td><input type="text" name="'.$name_position.'" value="'.$qo_position.'" size="4" /></td>';
-
-                                // Question Option Actions
-                                echo '<td><input type="button" onclick="deleteAnswerOption('.$question_options_counter.');" value="Delete" /></td>';
-                                echo '</tr>';
-                                $question_options_counter++;
+                            // Question Type
+                            echo '<tr><td>Question Type</td><td>';
+                            echo '<select id="question_type_select" name="question_type_id" onchange="questionTypeChanged()">';
+                            $questionTypes = QuestionTypeDao::getAll();
+                            foreach ($questionTypes as $questionType) {
+                                echo '<option question_type_code="'.$questionType->code.'" value="'.$questionType->id.'"';
+                                if (isset($question) && $question->typeId == $questionType->id) {
+                                    echo ' selected="selected"';
+                                }
+                                echo '>'.$questionType->name.'</option>';
                             }
+                            echo '</select></td></tr>';
+                            echo '</table>';
+
+                            echo '<div>Answer options:</div>';
+                            echo '<table id="question_options_table">';
+                            echo '<tr>
+                                    <th>ID</th>
+                                    <th>Text</th>
+                                    <th>Position</th>
+                                    <th>Actions</th>
+                                  </tr>';
+
+                            // Question Options
+                            if (isset($question)) {
+                                $questionType = $questionTypes[$question->typeId];
+                                if (isset($questionType) && $questionType->is(QuestionType::SingleChoice)) {
+                                    // QuestionsOptions List
+                                    $questionOptions = QuestionOptionDao::getAllForQuestion($question->id);
+                                    $questionOptionsCounter = 0;
+                                    foreach ($questionOptions as $questionOption) {
+                                        echo '<tr row_number="'.$questionOptionsCounter.'">';
+
+                                        // Question Option ID
+                                        $questionOptionId = $questionOption->id;
+                                        $questionOptionIdName = 'question_options['.$questionOptionsCounter.'][id]';
+                                        echo '<td><input type="hidden" name="'.$questionOptionIdName.'" value="'.$questionOptionId.'" />'.$questionOptionId.'</td>';
+
+                                        // Question Option Text
+                                        $questionOptionText = $questionOption->text;
+                                        $questionOptionTextName = 'question_options['.$questionOptionsCounter.'][text]';
+                                        echo '<td><input type="text" name="'.$questionOptionTextName.'" value="'.$questionOptionText.'" size="30" /></td>';
+
+                                        // Question Option Position
+                                        $questionOptionPosition = $questionOption->position;
+                                        $questionOptionPositionName = 'question_options['.$questionOptionsCounter.'][position]';
+                                        echo '<td><input type="text" name="'.$questionOptionPositionName.'" value="'.$questionOptionPosition.'" size="4" /></td>';
+
+                                        // Question Option Actions
+                                        echo '<td><input type="button" onclick="deleteAnswerOption('.$questionOptionsCounter.');" value="Delete" /></td>';
+                                        echo '</tr>';
+                                        $questionOptionsCounter++;
+                                    }
+                                }
+                            }
+
+                            echo '<tr><td colspan="4"><input type="button" onclick="addAnswerOption();" value="Add Answer Option" /></td></tr>';
+                            echo '</table>';
+                            echo '<input type="submit" value="Save" />';
+                            echo '</form>';
                         }
-                        echo '<tr><td colspan="4"><input type="button" onclick="addAnswerOption();" value="Add Answer Option" /></td></tr>';
-                        echo '</table>';
-                        echo '<input type="submit" value="Save" />';
-                        echo '</form>';
                     ?>
 
                     <? /* Body Area End */ ?>

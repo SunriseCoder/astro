@@ -1,6 +1,9 @@
 <?php
-    include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php';
+    if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
+
     LoginDao::checkPermissions([Permission::AstrologerAnswering], '/');
+
     if ($_SERVER['REQUEST_METHOD'] == 'GET' && (!isset($_GET['id']) || !preg_match('/^[0-9]+$/', $_GET['id']))) {
         Utils::redirect('/astrologer_choose.php');
     }
@@ -11,8 +14,8 @@
 ?>
 <html>
     <?
-        $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'Answer questions as an Astrologer';
+        $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
+        $page_title = Tr::trs('page.astrologerAnswers.pageTitle', 'Answer questions as an Astrologer');
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
     ?>
@@ -47,32 +50,37 @@
 
                         // TODO Rewrite these if-statements with a better way
                         if (isset($alreadyAnswered) && $alreadyAnswered) {
-                            echo 'Sorry, but you already have taken part in the survey';
+                            echo Tr::format('page.astrologerAnswers.error.alreadyAnswered', [$answerSessionId],
+                                'Sorry, but you already have answered Session with ID: {0}');
                         // Check that the Astrologer doesn't guess his own answers
                         } else if (isset($answerSession->originId)) {
-                            echo 'This is not a participant\'s answers';
+                            echo Tr::format('page.astrologerAnswers.error.notParticipantAnswers', [$answerSessionId],
+                                'Answer Session with ID: {0} is not a Participant\'s answers, but an Astrologer\'s answers');
                         } else if (isset($answerSession) && $answerSession->userId == LoginDao::getCurrentUser()->id) {
-                            echo 'Sorry, but you can not guess your own answers';
+                            echo Tr::format('page.astrologerAnswers.error.ownAnswers', [$answerSessionId],
+                                'Sorry, but AnswerSession with ID: {0} is your own answers and you cannot guess them');
                         } else if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             // Saving Astrologer's Answers
                             $error = AnswerSessionDao::saveAnswers();
                             if ($error) {
                                 echo '<font color="red">'.$error.'</font><br />';
                             } else {
-                                echo '<font color="green">Your answers has been sent, thank you very much</font>';
+                                $message = Tr::trs('page.astrologerAnswers.answeredSuccessfully', 'Your answers has been sent, thank you very much');
+                                echo '<font color="green">'.$message.'</font>';
                             }
                         } else {
                             $answerSessions = AnswerSessionDao::getWithNonSecretAnswers($answerSessionId);
 
                             if (count($answerSessions) > 0) {
-                                echo '<h3>Participant\'s birth data:</h3>';
+                                // Non-secret Answers Table
+                                echo '<h3>'.Tr::trs('page.astrologerAnswers.participantsPublicData', 'Participant\'s birth data').':</h3>';
                                 echo '<table>';
 
                                 // Table Header
                                 $questions = QuestionDao::getForAnswerSession($answerSessionId, FALSE);
                                 if (count($questions) > 0) {
-                                    echo '<th>Question</th>';
-                                    echo '<th>Answer</th>';
+                                    echo '<th>'.Tr::trs('word.question', 'Question').'</th>';
+                                    echo '<th>'.Tr::trs('word.answer', 'Answer').'</th>';
 
                                     // Table Content
                                     $answerSession = $answerSessions[$answerSessionId];
@@ -100,25 +108,29 @@
                                 echo '<input type="hidden" name="id" value="'.$answerSessionId.'" />';
 
                                 // Secret Answers Table
-                                echo '<h3>Participant\'s private data:</h3>';
+                                echo '<h3>'.Tr::trs('page.astrologerAnswers.participantsPrivateData', 'Participant\'s private data').':</h3>';
                                 $questions = QuestionDao::getForAnswerSession($answerSessionId, TRUE);
                                 if (count($questions) > 0) {
                                     echo '<table>';
-                                    echo '<tr><th>#</th><th>Text</th></tr>';
+                                    echo '<tr>';
+                                    echo '<th>'.Tr::trs('word.question.numberShort', '#').'</th>';
+                                    echo '<th>'.Tr::trs('word.question.text', 'Text').'</th>';
+                                    echo '</tr>';
                                     foreach ($questions as $question) {
+                                        // TODO Use i18n
                                         echo '<tr><td>'.$question->number.'</td><td>';
                                         QuestionRender::renderQuestion($question);
                                         echo '</td></tr>';
                                     }
                                     echo '</table>';
                                 } else {
-                                    echo 'No questions found';
+                                    echo Tr::trs('page.astrologerAnswers.message.noQuestionsFound', 'No questions found');
                                 }
 
-                                echo '<input type="submit" value="Send" />';
+                                echo '<input type="submit" value="'.Tr::trs('word.send', 'Send').'" />';
                                 echo '</form>';
                             } else {
-                                echo 'Invalid Answer Session ID: '.$answerSessionId;
+                                echo Tr::format('page.astrologerAnswers.error.invalidSessionId', [$answerSessionId], 'Invalid Answer Session ID: {0}');
                             }
                         }
                     ?>

@@ -216,6 +216,7 @@ function editTranslation(keywordId, languageId) {
 
     document.getElementById('editFormSubmit').disabled = false;
     window.scrollTo(0, 0); // Scroll to the top of the page
+    document.getElementById('translationCell').focus();
 }
 
 function clearEditForm() {
@@ -228,6 +229,7 @@ function clearEditForm() {
     document.getElementById('translationCell').value = '';
 
     document.getElementById('editFormSubmit').disabled = true;
+    document.getElementById('saveTranslationStatus').innerHTML = '';
 }
 
 function saveTranslation() {
@@ -247,8 +249,14 @@ function saveTranslation() {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             clearEditForm();
-            data = JSON.parse(this.responseText);
-            updateTranslationData(data);
+            try {
+                data = JSON.parse(this.responseText);
+                updateTranslationData(data);
+                document.getElementById('saveTranslationStatus').innerHTML = '<font color="green">Saved</font>';
+            } catch (e) {
+                var message = 'Error: ' + JSON.stringify(e);
+                document.getElementById('saveTranslationStatus').innerHTML = '<font color="red">' + message + '</font>';
+            }
         }
     };
     xhttp.open("POST", "translation_ajax.php", true);

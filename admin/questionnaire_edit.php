@@ -1,3 +1,6 @@
+<?php
+    if (!class_exists('Question')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
+?>
 <html>
     <?
         $browser_title = 'Chaitanya Academy - Questionnaires';
@@ -23,57 +26,16 @@
                     <? /* Body Area Start */ ?>
 
                     <?
-                        // Queries
-                        $questionnaire_sql =
-                            'SELECT id, name, is_active, is_locked
-                               FROM questionnaires
-                              WHERE id = ?';
-
-                        $questions_by_questionnaire_sql =
-                            'SELECT q.id as question_id,
-                                    q.number as question_number,
-                                    q.text as question_text,
-                                    q.position as question_position,
-                                    qt.name as question_type
-                               FROM questions q
-                          LEFT JOIN question_types qt on qt.id = q.question_type_id
-                              WHERE q.questionnaire_id = ?
-                           ORDER BY q.position ASC';
-
-                        $question_options_sql =
-                            'SELECT id as question_option_id,
-                                    question_id as question_id,
-                                    text as question_option_text
-                               FROM question_options
-                           ORDER BY position ASC';
-
-                        // Question Options Map
-                        $question_options_result = Db::query($question_options_sql);
-                        $question_options_map = [];
-                        foreach ($question_options_result as $question_options_row) {
-                            if (isset($question_options_map[$question_options_row['question_id']])) {
-                                $stored_value = $question_options_map[$question_options_row['question_id']];
-                                $stored_value = $stored_value.'<br />';
-                            } else {
-                                $stored_value = '';
-                            }
-                            $stored_value = $stored_value.$question_options_row['question_option_text'];
-                            $question_options_map[$question_options_row['question_id']] = $stored_value;
-                        }
-
                         // Parsing Questionnaire by given ID
                         if (isset($_GET['id'])) {
-                            $questionnaire_id = $_GET['id'];
-
-                            // Questionnaire
-                            $questionnaire_result = Db::prepQuery($questionnaire_sql, 'i', [$questionnaire_id]);
-                            if (count($questionnaire_result) == 1) {
-                                $questionnaire = $questionnaire_result[0];
-                                echo '<div>'.$questionnaire['name'].':</div>';
+                            $questionnaireId = $_GET['id'];
+                            $questionnaire = QuestionnaireDao::getById($questionnaireId);
+                            if (isset($questionnaire)) {
+                                echo '<div>'.$questionnaire->name.':</div>';
 
                                 // Parsing Questions for the Questionnaire
-                                $questions_result = Db::prepQuery($questions_by_questionnaire_sql, 'i', [$questionnaire_id]);
-                                if (count($questions_result) > 0) {
+                                $questions = QuestionDao::getAllForQuestionnaire($questionnaire->id);
+                                if (count($questions) > 0) {
                                     echo '<table>';
                                     echo '<tr>
                                             <th>ID</th>
@@ -86,27 +48,27 @@
                                           </tr>';
 
                                     // Questions List
-                                    foreach ($questions_result as $question_row) {
+                                    foreach ($questions as $question) {
                                         echo '<tr>';
-                                        echo '<td>'.$question_row['question_id'].'</td>';
-                                        echo '<td>'.$question_row['question_number'].'</td>';
-                                        echo '<td>'.$question_row['question_text'].'</td>';
-                                        echo '<td>'.$question_row['question_type'].'</td>';
+                                        echo '<td>'.$question->id.'</td>';
+                                        echo '<td>'.$question->number.'</td>';
+                                        echo '<td>'.$question->text.'</td>';
+                                        echo '<td>'.$question->type->name.'</td>';
                                         echo '<td>';
-                                        if (isset($question_options_map[$question_row['question_id']])) {
-                                            echo $question_options_map[$question_row['question_id']];
+                                        foreach ($question->options as $questionOption) {
+                                            echo $questionOption->text.'<br />';
                                         }
                                         echo '</td>';
-                                        echo '<td>'.$question_row['question_position'].'</td>';
-                                        echo '<td><a href="question_edit.php?id='.$question_row['question_id'].'">Edit</a></td>';
+                                        echo '<td>'.$question->position.'</td>';
+                                        echo '<td><a href="question_edit.php?id='.$question->id.'">Edit</a></td>';
                                         echo '</tr>';
                                     }
                                     echo '</table>';
                                 }
-                                echo count($questions_result).' question(s)<br />';
-                                echo '<a href="question_edit.php?questionnaire_id='.$questionnaire_id.'">Add New Question</a>';
+                                echo count($questions).' question(s)<br />';
+                                echo '<a href="question_edit.php?questionnaire_id='.$questionnaire->id.'">Add New Question</a>';
                             } else {
-                                echo 'Questionnaire with ID '.$questionnaire_id.' is not found';
+                                echo 'Questionnaire with ID '.$questionnaire->id.' is not found';
                             }
                         } else {
                             echo 'Questionnaire ID is not set';

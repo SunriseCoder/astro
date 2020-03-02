@@ -1,8 +1,11 @@
 /config.php 
 */.htaccess
 
+# Environment configurations
+/config/
+
 # Temporary data
-tmp/
+/tmp/
 
 # Eclipse Files
 .buildpath

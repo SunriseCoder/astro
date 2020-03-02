@@ -30,9 +30,11 @@
         public $id;
         public $questionnaireId;
         public $questionnaire;
+        public $typeId;
         public $type;
         public $options = [];
         public $number;
+        public $position;
         public $text;
         public $markup;
     }
@@ -62,6 +64,7 @@
 
         public $id;
         public $code;
+        public $name;
 
         public function is($type) {
             $result = $this->code == $type;
@@ -449,13 +452,12 @@
         public static function getDefaultQuestionnaire() {
             $sql = 'SELECT q.id as question_id,
                            q.number as question_number,
-                           q.text as question_text,
-                           q.markup as question_markup,
+                           q.position as question_position,
                            qn.id as questionnaire_id,
                            qt.id as question_type_id,
                            qt.code as question_type_code,
-                           qo.id as question_option_id,
-                           qo.text as question_option_text
+                           qt.name as question_type_name,
+                           qo.id as question_option_id
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -467,16 +469,35 @@
             return $questions;
         }
 
-        public static function getAll() {
+        public static function getAllForQuestionnaire($questionnaireId) {
             $sql = 'SELECT q.id as question_id,
                            q.number as question_number,
-                           q.text as question_text,
-                           q.markup as question_markup,
+                           q.position as question_position,
                            qn.id as questionnaire_id,
                            qt.id as question_type_id,
                            qt.code as question_type_code,
-                           qo.id as question_option_id,
-                           qo.text as question_option_text
+                           qt.name as question_type_name,
+                           qo.id as question_option_id
+                      FROM questions q
+                 LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
+                 LEFT JOIN question_types qt on qt.id = q.question_type_id
+                 LEFT JOIN question_options qo on qo.question_id = q.id
+                     WHERE qn.id = ?
+                  ORDER BY q.position, q.id, qo.position, qo.id ASC';
+            $queryResult = Db::prepQuery($sql, 'i', [$questionnaireId]);
+            $questions = self::fetchQuestions($queryResult);
+            return $questions;
+        }
+
+        public static function getAll() {
+            $sql = 'SELECT q.id as question_id,
+                           q.number as question_number,
+                           q.position as question_position,
+                           qn.id as questionnaire_id,
+                           qt.id as question_type_id,
+                           qt.code as question_type_code,
+                           qt.name as question_type_name,
+                           qo.id as question_option_id
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -490,13 +511,12 @@
         public static function getAllNonSecret() {
             $sql = 'SELECT q.id as question_id,
                            q.number as question_number,
-                           q.text as question_text,
-                           q.markup as question_markup,
+                           q.position as question_position,
                            qn.id as questionnaire_id,
                            qt.id as question_type_id,
                            qt.code as question_type_code,
-                           qo.id as question_option_id,
-                           qo.text as question_option_text
+                           qt.name as question_type_name,
+                           qo.id as question_option_id
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -511,13 +531,12 @@
         public static function getAllForAnswerSession($answerSessionId) {
             $sql = 'SELECT q.id as question_id,
                            q.number as question_number,
-                           q.text as question_text,
-                           q.markup as question_markup,
+                           q.position as question_position,
                            qn.id as questionnaire_id,
                            qt.id as question_type_id,
                            qt.code as question_type_code,
-                           qo.id as question_option_id,
-                           qo.text as question_option_text
+                           qt.name as question_type_name,
+                           qo.id as question_option_id
                       FROM answer_sessions ast
                       JOIN questionnaires qn on qn.id = ast.questionnaire_id
                       JOIN questions q on q.questionnaire_id
@@ -533,13 +552,12 @@
         public static function getForAnswerSession($answerSessionId, $secret) {
             $sql = 'SELECT q.id as question_id,
                            q.number as question_number,
-                           q.text as question_text,
-                           q.markup as question_markup,
+                           q.position as question_position,
                            qn.id as questionnaire_id,
                            qt.id as question_type_id,
                            qt.code as question_type_code,
-                           qo.id as question_option_id,
-                           qo.text as question_option_text
+                           qt.name as question_type_name,
+                           qo.id as question_option_id
                       FROM answer_sessions ast
                       JOIN questionnaires qn on qn.id = ast.questionnaire_id
                       JOIN questions q on q.questionnaire_id
@@ -553,16 +571,15 @@
             return $questions;
         }
 
-        public static function get($id) {
+        public static function getById($id) {
             $sql = 'SELECT q.id as question_id,
                            q.number as question_number,
-                           q.text as question_text,
-                           q.markup as question_markup,
+                           q.position as question_position,
                            qn.id as questionnaire_id,
                            qt.id as question_type_id,
                            qt.code as question_type_code,
-                           qo.id as question_option_id,
-                           qo.text as question_option_text
+                           qt.name as question_type_name,
+                           qo.id as question_option_id
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -571,7 +588,8 @@
                   ORDER BY q.position, q.id, qo.position, qo.id ASC';
             $queryResult = Db::prepQuery($sql, 'i', [$id]);
             $questions = self::fetchQuestions($queryResult);
-            return $questions;
+            $result = count($questions) > 0 ? $questions[$id] : NULL;
+            return $result;
         }
 
         private static function fetchQuestions($queryResult) {
@@ -586,8 +604,8 @@
                     $question->id = $queryRow['question_id'];
                     $question->questionnaireId = $queryRow['questionnaire_id'];
                     $question->number = $queryRow['question_number'];
-                    $question->text = $queryRow['question_text'];
-                    $question->markup = $queryRow['question_markup'];
+                    $question->position = $queryRow['question_position'];
+                    $question->text = Tr::getQuestion($question->id, 'text');
 
                     // If the QuestionType is not already in the Map, creating and putting
                     if (isset($questionTypes[$queryRow['question_type_id']])) {
@@ -597,11 +615,16 @@
 
                         $questionType->id = $queryRow['question_type_id'];
                         $questionType->code = $queryRow['question_type_code'];
+                        $questionType->name = $queryRow['question_type_name'];
 
                         $questionTypes[$questionType->id] = $questionType;
                     }
 
                     $question->type = $questionType;
+                    $question->typeId = $questionType->id;
+                    if ($question->type->is(QuestionType::Complex)) {
+                        $question->markup = Tr::getQuestion($question->id, 'markup');
+                    }
 
                     $questions[$question->id]= $question;
                 }
@@ -611,13 +634,95 @@
                     $questionOption = new QuestionOption();
 
                     $questionOption->id = $queryRow['question_option_id'];
-                    $questionOption->text = $queryRow['question_option_text'];
+                    $questionOption->text = Tr::getQuestionOption($questionOption->id, 'text');
 
                     $question->options[$questionOption->id] = $questionOption;
                 }
             }
 
             return $questions;
+        }
+
+        public static function updateFromPost() {
+            $questionId = $_POST['question_id'];
+            try {
+                Db::beginTransaction(0, 'SaveQuestion');
+
+                // Saving Question
+                $question = new Question();
+                $question->id = $questionId;
+                $question->questionnaireId = $_POST['questionnaire_id'];
+                $question->typeId = $_POST['question_type_id'];
+                $question->type = QuestionTypeDao::getById($question->typeId);
+                $question->number = $_POST['question_number'];
+                $question->position = $_POST['question_position'];
+                $question->text = $_POST['question_text'];
+                $question->markup = $_POST['question_markup'];
+                QuestionDao::update($question);
+
+                // Save All QuestionOptions
+                QuestionOptionDao::saveAllFromPost($questionId);
+
+                Db::commit();
+            } catch (Exception $e) {
+                Db::rollback();
+                Logger::error($e->getMessage().'Stacktrace: '.$e->getTraceAsString());
+                return $e->getMessage();
+            }
+        }
+
+        public static function update($question) {
+            $sql = 'UPDATE questions
+                       SET questionnaire_id = ?,
+                           question_type_id = ?,
+                           number = ?,
+                           position = ?
+                     WHERE id = ?';
+            $result = Db::prepStmt($sql, 'iisii', [$question->questionnaireId, $question->typeId, $question->number, $question->position, $question->id]);
+
+            // Saving translations
+            $result &= TranslationDao::saveQuestion($question);
+            return $result;
+        }
+
+        public static function insertFromPost() {
+            try {
+                Db::beginTransaction(0, 'SaveQuestion');
+
+                // Saving Question
+                $question = new Question();
+                $question->questionnaireId = $_POST['questionnaire_id'];
+                $question->typeId = $_POST['question_type_id'];
+                $question->number = $_POST['question_number'];
+                if (isset($_POST['question_position']) && !empty($_POST['question_position'])) {
+                    $question->position = $_POST['question_position'];
+                } else {
+                    $question->position = 10 * QuestionnaireDao::countQuestions($question->questionnaireId);
+                }
+                $question->text = $_POST['question_text'];
+                $question->markup = $_POST['question_markup'];
+                QuestionDao::insert($question);
+                $question->id = Db::insertedId();
+
+                // Saving translations
+                TranslationDao::saveQuestion($question);
+
+                // Save All QuestionOptions
+                QuestionOptionDao::saveAllFromPost($question->id);
+
+
+                Db::commit();
+            } catch (Exception $e) {
+                Db::rollback();
+                Logger::error($e->getMessage().'Stacktrace: '.$e->getTraceAsString());
+                return $e->getMessage();
+            }
+        }
+
+        public static function insert($question) {
+            $sql = 'INSERT INTO questions (questionnaire_id, question_type_id, number, position) VALUES (?, ?, ?, ?)';
+            $result = Db::prepStmt($sql, 'iisi', [$question->questionnaireId, $question->typeId, $question->number, $question->position]);
+            return $result;
         }
     }
 
@@ -630,10 +735,18 @@
         }
 
         public static function getAll() {
-            $sql = 'SELECT * FROM questionnaires WHERE is_active ORDER BY id';
+            $sql = 'SELECT * FROM questionnaires ORDER BY id';
             $queryResult = Db::query($sql);
             $questionnaires = self::fetchAll($queryResult);
             return $questionnaires;
+        }
+
+        public static function getById($questionnaireId) {
+            $sql = 'SELECT * FROM questionnaires WHERE id = ?';
+            $queryResult = Db::prepQuery($sql, 'i', [$questionnaireId]);
+            $questionnaires = self::fetchAll($queryResult);
+            $result = count($questionnaires) > 0 ? array_values($questionnaires)[0] : NULL;
+            return $result;
         }
 
         public static function fetchAll($queryResult) {
@@ -652,8 +765,7 @@
         public static function getAll() {
             $sql = 'SELECT qo.id as id,
                            qo.question_id as question_id,
-                           qo.position as position,
-                           qo.text as text
+                           qo.position as position
                       FROM question_options qo
                   ORDER BY qo.id';
             $queryResult = Db::query($sql);
@@ -661,11 +773,22 @@
             return $options;
         }
 
+        public static function getAllForQuestion($questionId) {
+            $sql = 'SELECT qo.id as id,
+                           qo.question_id as question_id,
+                           qo.position as position
+                      FROM question_options qo
+                     WHERE qo.question_id = ?
+                  ORDER BY qo.id';
+            $queryResult = Db::prepQuery($sql, 'i', [$questionId]);
+            $options = self::fetchAll($queryResult);
+            return $options;
+        }
+
         public static function get($id) {
             $sql = 'SELECT qo.id as id,
                            qo.question_id as question_id,
-                           qo.position as position,
-                           qo.text as text
+                           qo.position as position
                       FROM question_options qo
                      WHERE qo.id = ?';
             $queryResult = Db::prepQuery($sql, 'i', [$id]);
@@ -680,10 +803,112 @@
                 $option->id = $queryRow['id'];
                 $option->questionId = $queryRow['question_id'];
                 $option->position = $queryRow['position'];
-                $option->text = $queryRow['text'];
+                $option->text = Tr::getQuestionOption($option->id, 'text');
                 $options[$option->id] = $option;
             }
             return $options;
+        }
+
+        public static function saveAllFromPost($questionId) {
+            if (isset($_POST['question_options'])) {
+                // Saving Question Options
+                $postElements = $_POST['question_options'];
+                function question_options_compare($a, $b) {
+                    return $a['position'] - $b['position'];
+                }
+                usort($postElements, 'question_options_compare');
+
+                $position = 10;
+                $storedOptions = QuestionOptionDao::getAllForQuestion($questionId);
+                foreach ($postElements as $postElement) {
+                    $option = new QuestionOption();
+                    $option->questionId = $questionId;
+                    $option->position = $position;
+                    $option->text = $postElement['text'];
+
+                    if (isset($postElement['id'])) {
+                        // Update existing Question Option
+                        $option->id = $postElement['id'];
+                        self::update($option);
+                    } else {
+                        // Insert new Question Option
+                        self::insert($option);
+                        $option->id = Db::insertedId();
+                    }
+
+                    if (isset($storedOptions[$option->id])) {
+                        unset($storedOptions[$option->id]);
+                    }
+                    $position += 10;
+                }
+
+                // Delete deleted Question Options from Database
+                foreach ($storedOptions as $option) {
+                    self::deleteById($option->id);
+                }
+            }
+        }
+
+        public static function update($option) {
+            $sql = 'UPDATE question_options
+                       SET question_id = ?,
+                           position = ?
+                     WHERE id = ?';
+            $result = Db::prepStmt($sql, 'iii', [$option->questionId, $option->position, $option->id]);
+            TranslationDao::saveQuestionOption($option);
+            return $result;
+        }
+
+        public static function insert($option) {
+            $sql = 'INSERT INTO question_options (question_id, position) VALUES (?, ?)';
+            $result = Db::prepStmt($sql, 'ii', [$option->questionId, $option->position]);
+            $option->id = Db::insertedId();
+            TranslationDao::saveQuestionOption($option);
+            return $result;
+        }
+
+        public static function deleteById($optionId) {
+            $sql = 'DELETE FROM question_options WHERE id = ?';
+            $result = Db::prepStmt($sql, 'i', [$optionId]);
+            TranslationDao::deleteQuestionOption($optionId);
+            return $result;
+        }
+    }
+
+    class QuestionTypeDao {
+        public static function getAll() {
+            $sql = 'SELECT qt.id as id,
+                           qt.code as code,
+                           qt.name as name
+                      FROM question_types qt
+                  ORDER BY qt.id';
+            $queryResult = Db::query($sql);
+            $entities = self::fetchAll($queryResult);
+            return $entities;
+        }
+
+        public static function getById($id) {
+            $sql = 'SELECT qt.id as id,
+                           qt.code as code,
+                           qt.name as name
+                      FROM question_types qt
+                     WHERE qt.id = ?';
+            $queryResult = Db::prepQuery($sql, 'i', [$id]);
+            $entities = self::fetchAll($queryResult);
+            $result = count($entities) > 0 ? array_values($entities)[0] : NULL;
+            return $result;
+        }
+
+        public static function fetchAll($queryResult) {
+            $entities = [];
+            foreach ($queryResult as $queryRow) {
+                $entity = new QuestionType();
+                $entity->id = $queryRow['id'];
+                $entity->code = $queryRow['code'];
+                $entity->name = $queryRow['name'];
+                $entities[$entity->id] = $entity;
+            }
+            return $entities;
         }
     }
 ?>

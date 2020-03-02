@@ -1,6 +1,9 @@
+<?php
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
+?>
 <html>
     <?
-        $browser_title = 'Chaitanya Academy - Astrology';
+        $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
         $page_title = 'The Chaitanya Academy ASTRO-PROJECT';
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';

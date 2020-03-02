@@ -1,7 +1,6 @@
 <?php
-    if (!class_exists('Json')) {
-        include $_SERVER["DOCUMENT_ROOT"].'/utils/json.php';
-    }
+    if (!class_exists('Json')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/json.php'; }
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
     class AnswerRender {
         /**
@@ -15,16 +14,17 @@
          */
         public static function renderAnswer($questions, $answer) {
             if (!isset($answer)) {
-                return 'No Answer';
+                return Tr::trs('word.noAnswer', 'No Answer');
             }
 
             if (!isset($answer->questionId)) {
-                return 'Error: questionId is not set';
+                return Tr::format('error.renderAnswer.noQuestionId', [$answer->id], 'Error: For Answer with ID: {0} the QuestionID is not set');
             }
 
             $questionId = $answer->questionId;
             if (!isset($questions[$questionId])) {
-                return 'Error: wrong questionId: '.$questionId;
+                return Tr::format('error.renderAnswer.nonExistentQuestionId', [$answer->id, $questionId],
+                    'Error: Answer with ID: {0} references to non-existent Question with ID: {1}');
             }
 
             $question = $questions[$questionId];
@@ -35,12 +35,13 @@
                 $questionOptionId = $answer->questionOptionId;
                 $questionOptions = $question->options;
                 if (!isset($questionOptions)) {
-                    return 'Error: In the Answer '.$answer->id.' questionOptionId is set: '.$questionOptionId.', but the Question '.$questionId.' has no Options';
+                    return Tr::format('error.renderAnswer.questionOptionIsSetButQuestionHasNoOptions', [$answer->id, $questionOptionId, $questionId],
+                        'Error: In the Answer with ID: {0} questionOptionId is set to: {1}, but the Question with ID: {2} has no Options');
                 }
 
                 if (!isset($questionOptions[$questionOptionId])) {
-                    return 'Error: In the Answer '.$answer->id.' questionOptionId is set to: '.$questionOptionId.
-                        ', but there is no such Option in Question '.$questionId;
+                    return Tr::format('error.renderAnswer.questionOptionIsSetButQuestionHasNoThisOption', [$answer->id, $questionOptionId, $questionId],
+                        'Error: In the Answer with ID: {0} questionOptionId is set to: {1}, but there is no such Option in Question with ID: {2}');
                 }
                 $questionOption = $questionOptions[$questionOptionId];
                 $value = $questionOption->text;
@@ -52,12 +53,12 @@
 
         public static function renderComplexAnswer($question, $answer) {
             if (!isset($answer->value)) {
-                return 'No Answer';
+                return Tr::trs('word.noAnswer', 'No Answer');
             }
 
             $answerObject = Json::decode($answer->value);
             if (count($answerObject) == 0) {
-                return 'No Answer';
+                return Tr::trs('word.noAnswer', 'No Answer');
             }
 
             $questionObject = Json::decode($question->markup);
@@ -92,13 +93,13 @@
                             if (isset($questionOptions[$subQuestion->name][$value])) {
                                 $result .= $questionOptions[$subQuestion->name][$value]->text;
                             } else {
-                                $result .= 'No Answer';
+                                $result .= Tr::trs('word.noAnswer', 'No Answer');
                             }
                         } else {
                             $result .= $value;
                         }
                     } else {
-                        $result .= 'No Answer';
+                        $result .= Tr::trs('word.noAnswer', 'No Answer');
                     }
                     $result .= '</td>';
                 }
@@ -160,8 +161,9 @@
                     echo '</script>';
                     break;
                 default:
-                    echo '<font color="red">Unsupported Question Type: '.$question->type->code.'</font>';
-                    var_dump($question);
+                    Logger::error('Unsupported Question Type: '.$question->type->code);
+                    $message = Tr::format('error.renderQuestion.unsupportedQuestionType', [$question->type->code], 'Unsupported QuestionType: {0}');
+                    echo '<font color="red">'.$message.'</font>';
                     break;
             }
         }

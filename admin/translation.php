@@ -49,6 +49,7 @@
                         </table>
                         <input id="editFormSubmit" type="button" value="Save" onclick="saveTranslation();" />
                         <input type="button" value="Clear" onclick="clearEditForm();" />
+                        <label id="saveTranslationStatus"></label>
                     </form>
 
                     <!-- Table Filters -->

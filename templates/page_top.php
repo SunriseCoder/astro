@@ -15,7 +15,6 @@
         foreach ($languages as $language) {
             echo '<option value="'.$language->code.'"';
             if (isset($_COOKIE['language']) && $_COOKIE['language'] == $language->code) {
-                Tr::setCurrentLanguage($language->code);
                 echo ' selected="selected"';
             }
             echo '>'.$language->nameNative.'</option>';

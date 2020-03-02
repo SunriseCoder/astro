@@ -1,7 +1,6 @@
 <?php
-    if (!class_exists('Db')) {
-        include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php';
-    }
+    if (!class_exists('Db')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php'; }
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
     class Language {
         public $id;
@@ -30,6 +29,18 @@
             return $languages;
         }
 
+        public static function getDefault() {
+            $sql = 'SELECT * FROM i18n_languages WHERE code = (SELECT value FROM settings WHERE code = \'DEFAULT_LANGUAGE_CODE\')';
+            $queryResult = Db::query($sql);
+            $languages = self::fetchAll($queryResult);
+            if (count($languages) > 0) {
+                $result = array_values($languages)[0];
+                return $result;
+            }
+
+            throw new Exception('Error: Default Language not found, look database tables "languages" and "settings", parameter "DEFAULT_LANGUAGE_CODE"');
+        }
+
         public static function fetchAll($queryResult) {
             $languages = [];
             foreach ($queryResult as $queryRow) {
@@ -46,11 +57,35 @@
     }
 
     class KeywordDao {
+        const QUESTION_PREFIX = 'entities.question.';
+        const QUESTION_OPTION_PREFIX = 'entities.questionOption.';
+
         public static function getAll() {
             $sql = 'SELECT * FROM i18n_keywords ORDER BY id';
             $queryResult = Db::query($sql);
             $keywords = self::fetchAll($queryResult);
             return $keywords;
+        }
+
+        public static function getById($id) {
+            $sql = 'SELECT * FROM i18n_keywords WHERE id = ?';
+            $queryResult = Db::prepQuery($sql, 'i', [$id]);
+            $keywords = self::fetchAll($queryResult);
+            $result = count($keywords) > 0 ? array_values($keywords)[0] : NULL;
+            return $result;
+        }
+
+        public static function getOrInsertByCode($keywordCode) {
+            $keyword = Tr::getKeywordByCode($keywordCode);
+            if (!isset($keyword)) {
+                self::insert($keywordCode);
+
+                $keywordId = Db::insertedId();
+                $keyword = self::getById($keywordId);
+                Tr::addKeyword($keyword);
+            }
+
+            return $keyword;
         }
 
         public static function fetchAll($queryResult) {
@@ -65,9 +100,15 @@
             return $keywords;
         }
 
-        public static function insert($keyword) {
+        public static function insert($keywordCode) {
             $sql = 'INSERT INTO i18n_keywords (code) VALUES (?)';
-            $result = Db::prepStmt($sql, 's', [$keyword]);
+            $result = Db::prepStmt($sql, 's', [$keywordCode]);
+            return $result;
+        }
+
+        public static function deleteById($keywordId) {
+            $sql = 'DELETE FROM i18n_keywords WHERE id = ?';
+            $result = Db::prepStmt($sql, 'i', [$keywordId]);
             return $result;
         }
     }
@@ -80,11 +121,20 @@
             return $translations;
         }
 
-        public static function getByKeywordAndLanguage($keywordId, $languageId) {
+        public static function getById($id) {
+            $sql = 'SELECT * FROM i18n_translations WHERE id = ?';
+            $queryResult = Db::prepQuery($sql, 'i', [$id]);
+            $translations = self::fetchAll($queryResult);
+            $result = count($translations) > 0 ? array_values($translations)[0] : NULL;
+            return $result;
+        }
+
+        public static function getByKeywordIdAndLanguageId($keywordId, $languageId) {
             $sql = 'SELECT * FROM i18n_translations WHERE keyword_id = ? AND language_id = ? ORDER BY id';
             $queryResult = Db::prepQuery($sql, 'ii', [$keywordId, $languageId]);
             $translations = self::fetchAll($queryResult);
-            return $translations;
+            $result = count($translations) > 0 ? array_values($translations)[0] : NULL;
+            return $result;
         }
 
         public static function fetchAll($queryResult) {
@@ -101,6 +151,42 @@
             return $translations;
         }
 
+        public static function saveQuestion($question) {
+            // Question Text
+            self::saveByKeywordCode(KeywordDao::QUESTION_PREFIX.$question->id.'.text', $question->text);
+
+            // Question Markup
+            if (isset($question->type) && $question->type->is(QuestionType::Complex)) {
+                self::saveByKeywordCode(KeywordDao::QUESTION_PREFIX.$question->id.'.markup', $question->markup);
+            }
+        }
+
+        public static function saveQuestionOption($option) {
+            // QuestionOption Text
+            self::saveByKeywordCode(KeywordDao::QUESTION_OPTION_PREFIX.$option->id.'.text', $option->text);
+        }
+
+        private static function saveByKeywordCode($keywordCode, $text) {
+            $keyword = KeywordDao::getOrInsertByCode($keywordCode);
+            $language = Tr::getCurrentLanguage();
+            self::saveByKeywordIdAndLanguageId($keyword->id, $language->id, $text);
+        }
+
+        public static function saveByKeywordIdAndLanguageId($keywordId, $languageId, $text) {
+            $translation = TranslationDao::getByKeywordIdAndLanguageId($keywordId, $languageId);
+            if (isset($translation)) {
+                $translation->text = $text;
+                self::update($translation);
+            } else {
+                $translation = new Translation();
+                $translation->keywordId = $keywordId;
+                $translation->languageId = $languageId;
+                $translation->text = $text;
+                self::insert($translation);
+            }
+            Tr::updateTranslation($translation);
+        }
+
         public static function insert($translation) {
             $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text) VALUES (?, ?, ?)';
             $result = Db::prepStmt($sql, 'iis', [$translation->keywordId, $translation->languageId, $translation->text]);
@@ -110,6 +196,23 @@
         public static function update($translation) {
             $sql = 'UPDATE i18n_translations SET text = ? WHERE id = ?';
             $result = Db::prepStmt($sql, 'si', [$translation->text, $translation->id]);
+            return $result;
+        }
+
+        public static function deleteQuestionOption($optionId) {
+            $keywordCode = KeywordDao::QUESTION_OPTION_PREFIX.$optionId.'.text';
+            $keyword = Tr::getKeywordByCode($keywordCode);
+
+            TranslationDao::deleteAllByKeywordId($keyword->id);
+            Tr::deleteAllTranslationsByKeywordCode($keywordCode);
+
+            KeywordDao::deleteById($keyword->id);
+            Tr::deleteKeywordById($keyword->id);
+        }
+
+        public static function deleteAllByKeywordId($keywordId) {
+            $sql = 'DELETE FROM i18n_translations WHERE keyword_id = ?';
+            $result = Db::prepStmt($sql, 'i', [$keywordId]);
             return $result;
         }
     }

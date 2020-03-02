@@ -12,18 +12,7 @@
             $translation->text = $_POST['text'];
             TranslationDao::update($translation);
         } else if (Utils::areSet($_POST, ['keyword_id', 'language_id', 'text'])) {
-            $translations = TranslationDao::getByKeywordAndLanguage($_POST['keyword_id'], $_POST['language_id']);
-            if (count($translations) == 0) {
-                $translation = new Translation();
-                $translation->keywordId = $_POST['keyword_id'];
-                $translation->languageId = $_POST['language_id'];
-                $translation->text = $_POST['text'];
-                TranslationDao::insert($translation);
-            } else {
-                $translation = array_values($translations)[0];
-                $translation->text = $_POST['text'];
-                TranslationDao::update($translation);
-            }
+            TranslationDao::saveByKeywordIdAndLanguageId($_POST['keyword_id'], $_POST['language_id'], $_POST['text']);
         }
     }
 
