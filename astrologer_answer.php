@@ -2,7 +2,7 @@
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
     if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
-    LoginDao::checkPermissions([Permission::AstrologerAnswering], '/');
+    LoginDao::checkPermissionsAndRedirect([Permission::AstrologerAnswering], './');
 
     if ($_SERVER['REQUEST_METHOD'] == 'GET' && (!isset($_GET['id']) || !preg_match('/^[0-9]+$/', $_GET['id']))) {
         Utils::redirect('/astrologer_choose.php');
@@ -117,7 +117,6 @@
                                     echo '<th>'.Tr::trs('word.question.text', 'Text').'</th>';
                                     echo '</tr>';
                                     foreach ($questions as $question) {
-                                        // TODO Use i18n
                                         echo '<tr><td>'.$question->number.'</td><td>';
                                         QuestionRender::renderQuestion($question);
                                         echo '</td></tr>';

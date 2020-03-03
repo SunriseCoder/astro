@@ -1,3 +1,7 @@
+<?php
+    if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
+    LoginDao::checkPermissionsAndRedirect([Permission::AdminMenuVisible], '../');
+?>
 <html>
     <?
         $browser_title = 'Chaitanya Academy - Astrology';
@@ -23,8 +27,7 @@
                     <? /* Body Area Start */ ?>
 
                     Hello!<br />
-                    Here will be a very big project...<br />
-                    Very soon...<br />
+                    Welcome to the Administration page<br />
 
                     <? /* Body Area End */ ?>
 

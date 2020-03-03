@@ -29,6 +29,14 @@
             return $languages;
         }
 
+        public static function getById($id) {
+            $sql = 'SELECT * FROM i18n_languages WHERE id = ?';
+            $queryResult = Db::prepQuery($sql, 'i', [$id]);
+            $languages = self::fetchAll($queryResult);
+            $result = count($languages) > 0 ? array_values($languages)[0] : NULL;
+            return $result;
+        }
+
         public static function getDefault() {
             $sql = 'SELECT * FROM i18n_languages WHERE code = (SELECT value FROM settings WHERE code = \'DEFAULT_LANGUAGE_CODE\')';
             $queryResult = Db::query($sql);

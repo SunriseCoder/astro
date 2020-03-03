@@ -1,10 +1,11 @@
 <?php
-    include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php';
+    if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
+    LoginDao::checkPermissionsAndRedirect([Permission::UsersView], './');
 ?>
 <html>
     <?
         $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'User View';
+        $page_title = 'Users View';
 
         include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
     ?>
@@ -47,13 +48,13 @@
                                 // Roles
                                 echo '<td>';
                                 foreach ($user->roles as $role) {
-                                    echo $role->name.'<br />';
+                                    echo $role->id.': '.$role->name.'<br />';
                                 }
                                 echo '</td>';
                                 // Permissions
                                 echo '<td>';
                                 foreach ($user->permissions as $permission) {
-                                    echo $permission->code.'<br />';
+                                    echo $permission->id.': '.$permission->code.'<br />';
                                 }
                                 echo '</td>';
                                 echo '</tr>';
@@ -63,9 +64,17 @@
                         } else {
                             echo 'No Users was found.';
                         }
+                        echo '<br />';
+
+                        // Roles and Permissions Markup Table
+                        echo '<table>';
+                        echo '<tr>';
+                        echo '<th><h3>Roles</h3></th>';
+                        echo '<th><h3>Permissions</h3></th>';
+                        echo '</tr><tr>';
+                        echo '<td valign="top">';
 
                         // Roles Table
-                        echo '<h3>Roles</h3>';
                         $roles = RoleDao::getAll();
                         if (count($roles) > 0) {
                             echo '<table border="1">';
@@ -80,7 +89,7 @@
                                 // Permissions
                                 echo '<td>';
                                 foreach ($role->permissions as $permission) {
-                                    echo $permission->code.'<br />';
+                                    echo $permission->id.': '.$permission->code.'<br />';
                                 }
                                 echo '</td>';
                                 echo '</tr>';
@@ -90,6 +99,29 @@
                         } else {
                             echo 'No Roles was found.';
                         }
+
+                        echo '</td><td valign="top">';
+
+                        // Permissions Table
+                        $permissions = PermissionDao::getAll();
+                        if (count($permissions) > 0) {
+                            echo '<table border="1">';
+                            echo '<th>ID</th>';
+                            echo '<th>Code</th>';
+
+                            foreach ($permissions as $permission) {
+                                echo '<tr>';
+                                echo '<td>'.$permission->id.'</td>';
+                                echo '<td>'.$permission->code.'</td>';
+                                echo '</tr>';
+                            }
+
+                            echo '</table>';
+                        } else {
+                            echo 'No Permissions was found.';
+                        }
+
+                        echo '</td></tr></table>';
                     ?>
 
                     <? /* Body Area End */ ?>

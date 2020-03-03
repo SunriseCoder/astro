@@ -5,8 +5,30 @@ if (!class_exists('Utils')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.ph
 if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
 class Permission {
+    // Prefixes (not actual Permissions)
+    const TRANSLATIONS_EDIT_PREFIX = 'TranslationsEdit';
+
+    // Technical stuff
+    const TechnicalView = 'TechnicalView';
+    const TechnicalChange = 'TechnicalChange';
+
     // Administration
     const AdminMenuVisible = 'AdminMenuVisible';
+    const AnswerSessionsView = 'AnswerSessionsView';
+    const AnswerSessionsDelete = 'AnswerSessionsDelete';
+    const QuestionsView = 'QuestionsView';
+    const QuestionsEdit = 'QuestionsEdit';
+    const UsersView = 'UsersView';
+
+    // Translators
+    const TranslationsView = 'TranslationsView';
+    const TranslationsEditEnglish = 'TranslationsEditEnglish';
+    const TranslationsEditRussian = 'TranslationsEditRussian';
+    const TranslationsEditItalian = 'TranslationsEditItalian';
+    const TranslationsEditSpanish = 'TranslationsEditSpanish';
+    const TranslationsEditTurkish = 'TranslationsEditTurkish';
+    const TranslationsEditGerman = 'TranslationsEditGerman';
+    const TranslationsEditFrench = 'TranslationsEditFrench';
 
     // Astrologers
     const AstrologerAnswering = 'AstrologerAnswering';
@@ -18,7 +40,7 @@ class Permission {
 class PermissionDao {
     public static function getAll() {
         $permissions = [];
-        $sql = 'SELECT * FROM permissions ORDER BY id';
+        $sql = 'SELECT p.* FROM permissions p ORDER BY id';
         $results = Db::query($sql);
         foreach ($results as $result) {
             $permission = self::fetchPermission($result);
@@ -30,8 +52,8 @@ class PermissionDao {
     public static function getAllByUserId($user_id) {
         $sql =
             '   SELECT DISTINCT
-                       p.id id,
-                       p.code code
+                       p.id as id,
+                       p.code as code
                   FROM users u
              LEFT JOIN j_users_roles ur on ur.user_id = u.id
              LEFT JOIN roles r on r.id = ur.role_id
@@ -82,12 +104,15 @@ class RoleDao {
         $sql = 'SELECT * FROM j_roles_permissions';
         $joins = Db::query($sql);
         foreach ($joins as $join) {
-            $roles[$join['role_id']]->permissions[$join['permission_id']] = $permissions[$join['permission_id']];
+            // TODO Rewrite it without using these joins if possible
+            $permission = $permissions[$join['permission_id']];
+            $roles[$join['role_id']]->permissions[$join['permission_id']] = $permission;
         }
 
         return $roles;
     }
 
+    // TODO Add permissions fetch as well
     public static function getAllByUserId($user_id) {
         $sql =
             '   SELECT r.id id,
@@ -303,18 +328,31 @@ class LoginDao {
 
     /**
      * Checking presense of ALL required permissions
-     * If the current User doesn't even one permission, redirect will be performed
+     * If the current User doesn't have even one permission, redirect will be performed
      *
      * @param array $permissions Array of Permissions to check
      * @param string $redirectUrl URL to redirect in case of lack of the Permissions
      */
-    public static function checkPermissions($permissions, $redirectUrl) {
+    public static function checkPermissionsAndRedirect($permissions, $redirectUrl) {
+        $hasPermissions = self::checkPermissions($permissions);
+        if (!$hasPermissions) {
+            Utils::redirect($redirectUrl);
+        }
+    }
+
+    /**
+     * Checking presense of ALL required permissions
+     *
+     * @param array $permissions Array of Permissions to check
+     * @return TRUE if $currentUser has ALL required privileges, otherwise FALSE
+     */
+    public static function checkPermissions($permissions) {
         if (!self::$currentUser) {
             self::autologin();
         }
 
         if (!self::$currentUser) {
-            Utils::redirect($redirectUrl);
+            return FALSE;
         }
 
         foreach ($permissions as $permission) {
@@ -326,9 +364,11 @@ class LoginDao {
                 }
             }
             if (!$found) {
-                Utils::redirect($redirectUrl);
+                return FALSE;
             }
         }
+
+        return TRUE;
     }
 
     /**

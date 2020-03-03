@@ -1,5 +1,6 @@
 <?php
-    include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php';
+    if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
+    LoginDao::checkPermissionsAndRedirect([Permission::TranslationsView], './');
 ?>
 <html>
     <?
@@ -50,14 +51,14 @@
                         <input id="editFormSubmit" type="button" value="Save" onclick="saveTranslation();" />
                         <input type="button" value="Clear" onclick="clearEditForm();" />
                         <label id="saveTranslationStatus"></label>
-                        <input id="copyDefaultLanguageValueIfEmpty" type="checkbox" />Copy Default Language Value if empty
                     </form>
 
                     <!-- Table Filters -->
                     <input type="button" value="Refresh" onclick="refreshTranslationData();" />
                     Filter: <input id="textFilter" type="text" size="20" oninput="renderTranslationTable();" />
                     <input id="emptyCellsOnlyFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Cells Only
-                    <input id="emptyRowsOnlyFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Rows Only<br />
+                    <input id="emptyRowsOnlyFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Rows Only
+                    <input id="copyDefaultLanguageValueIfEmpty" type="checkbox" />Copy Default Language Value if empty<br />
                     <div id="languageFilter">
                         <input type="button" value="All" onclick="selectAllLanguageFilters(true);" />
                         <input type="button" value="None" onclick="selectAllLanguageFilters(false);" />

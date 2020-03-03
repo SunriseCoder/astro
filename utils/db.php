@@ -1,6 +1,6 @@
 <?php
 
-include $_SERVER["DOCUMENT_ROOT"].'/utils/config.php';
+include $_SERVER["DOCUMENT_ROOT"].'/config/config.php';
 
 if (!class_exists('Utils')) {
     include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php';

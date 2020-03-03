@@ -262,8 +262,7 @@ function saveTranslation() {
                 updateTranslationData(data);
                 document.getElementById('saveTranslationStatus').innerHTML = '<font color="green">Saved</font>';
             } catch (e) {
-                var message = 'Error: ' + JSON.stringify(e);
-                document.getElementById('saveTranslationStatus').innerHTML = '<font color="red">' + message + '</font>';
+                document.getElementById('saveTranslationStatus').innerHTML = '<font color="red">' + this.responseText + '</font>';
             }
         }
     };

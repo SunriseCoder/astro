@@ -1,3 +1,7 @@
+<?php
+    if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
+    LoginDao::checkPermissionsAndRedirect([Permission::QuestionsView], './');
+?>
 <html>
     <?
         $browser_title = 'Chaitanya Academy - Questionnaires';
@@ -38,7 +42,11 @@
                                     echo '<td>'.$row['id'].'</td>';
                                     echo '<td>'.$row['name'].'</td>';
                                     echo '<td>'.$row['is_active'].'</td>';
-                                    echo '<td><a href="questionnaire_edit.php?id='.$row['id'].'">Edit</a></td>';
+                                    echo '<td>';
+                                    if (LoginDao::checkPermissions([Permission::QuestionsEdit])) {
+                                        echo '<a href="questionnaire_edit.php?id='.$row['id'].'">Edit</a>';
+                                    }
+                                    echo '</td>';
                                     echo '</tr>';
                                 }
                             } else {

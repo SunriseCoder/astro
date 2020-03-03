@@ -1,6 +1,6 @@
 <?php
     include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php';
-    LoginDao::checkPermissions([Permission::AstrologerAnswering], '/');
+    LoginDao::checkPermissionsAndRedirect([Permission::AstrologerAnswering], './');
 
     if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 ?>

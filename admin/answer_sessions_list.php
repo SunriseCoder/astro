@@ -1,3 +1,11 @@
+<?php
+    if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
+    LoginDao::checkPermissionsAndRedirect([Permission::AnswerSessionsView], './');
+
+    if (isset($_GET['action']) && $_GET['action'] == 'delete') {
+        LoginDao::checkPermissionsAndRedirect([Permission::AnswerSessionsDelete], './');
+    }
+?>
 <html>
     <?
         $browser_title = 'Chaitanya Academy - Answer Sessions';
@@ -69,10 +77,12 @@
                                     echo '<td>'.$row['user_id'].': '.$row['user_name'].'</td>';
                                     echo '<td>'.$row['ip_address'].'</td>';
                                     echo '<td>'.$row['date'].'</td>';
-                                    echo '<td>
-                                            <a href="answers_view.php?session_id='.$row['id'].'">View</a>
-                                            <a href="answer_sessions_list.php?action=delete&id='.$row['id'].'">Delete</a>
-                                        </td>';
+                                    echo '<td>';
+                                    echo '<a href="answers_view.php?session_id='.$row['id'].'">View</a>';
+                                    if (LoginDao::checkPermissions([Permission::AnswerSessionsDelete])) {
+                                        echo ' <a href="answer_sessions_list.php?action=delete&id='.$row['id'].'">Delete</a>';
+                                    }
+                                    echo '</td>';
                                     echo '</tr>';
                                 }
                             } else {
