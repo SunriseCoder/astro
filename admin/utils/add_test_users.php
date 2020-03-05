@@ -13,7 +13,8 @@
         ['name' => 'Astrologer', 'email' => 'astrologer@test.com', 'pass' => '123', 'roles' => ['Astrologer']],
         ['name' => 'Administrator', 'email' => 'administrator@test.com', 'pass' => '123', 'roles' => ['Administrator']],
         ['name' => 'TranslatorEnglish', 'email' => 'translator.english@test.com', 'pass' => '123', 'roles' => ['TranslatorEnglish']],
-        ['name' => 'TranslatorRussian', 'email' => 'translator.russian@test.com', 'pass' => '123', 'roles' => ['TranslatorRussian']]
+        ['name' => 'TranslatorRussian', 'email' => 'translator.russian@test.com', 'pass' => '123', 'roles' => ['TranslatorRussian']],
+        ['name' => 'TranslatorTurkish', 'email' => 'translator.turkish@test.com', 'pass' => '123', 'roles' => ['TranslatorTurkish']]
     ];
 
     foreach ($users as $user) {

@@ -196,12 +196,14 @@
         }
 
         public static function insert($translation) {
+            $translation->text = trim($translation->text);
             $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text) VALUES (?, ?, ?)';
             $result = Db::prepStmt($sql, 'iis', [$translation->keywordId, $translation->languageId, $translation->text]);
             return $result;
         }
 
         public static function update($translation) {
+            $translation->text = trim($translation->text);
             $sql = 'UPDATE i18n_translations SET text = ? WHERE id = ?';
             $result = Db::prepStmt($sql, 'si', [$translation->text, $translation->id]);
             return $result;

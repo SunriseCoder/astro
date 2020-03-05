@@ -4,7 +4,7 @@
 <html>
     <?
         $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
-        $page_title = 'The Chaitanya Academy ASTRO-PROJECT';
+        $page_title = Tr::trs('page.index.pageTitle', 'The Chaitanya Academy ASTRO-PROJECT');
 
         include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
     ?>

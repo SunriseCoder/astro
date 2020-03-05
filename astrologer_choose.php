@@ -32,6 +32,8 @@
                         include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php';
                         include $_SERVER["DOCUMENT_ROOT"].'/render/questions.php';
 
+                        echo Tr::trs('page.astrologerChoose.text.surveyInstructions', '').'<br /><br />';
+
                         $allQuestionnaires = QuestionnaireDao::getAll();
                         $allQuestions = QuestionDao::getAllNonSecret();
 

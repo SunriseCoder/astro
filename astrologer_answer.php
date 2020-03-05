@@ -71,6 +71,8 @@
                         } else {
                             $answerSessions = AnswerSessionDao::getWithNonSecretAnswers($answerSessionId);
 
+                            echo Tr::trs('page.astrologerAnswers.text.surveyInstructions', '');
+
                             if (count($answerSessions) > 0) {
                                 // Non-secret Answers Table
                                 echo '<h3>'.Tr::trs('page.astrologerAnswers.participantsPublicData', 'Participant\'s birth data').':</h3>';
