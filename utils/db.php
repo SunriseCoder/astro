@@ -1,10 +1,8 @@
 <?php
-
-include $_SERVER["DOCUMENT_ROOT"].'/config/config.php';
-
-if (!class_exists('Utils')) {
-    include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php';
-}
+if (!class_exists('Config')) { include $_SERVER["DOCUMENT_ROOT"].'/config/config.php'; }
+if (!class_exists('Json')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/json.php'; }
+if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
+if (!class_exists('Utils')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php'; }
 
 class Db {
     public static $conn;
@@ -94,6 +92,7 @@ class Db {
      * @return array of arrays - fetched data
      */
     public static function query($sql) {
+        self::logQuery($sql, NULL);
         self::connectIfNeeded();
 
         $query = self::$conn->query($sql);
@@ -129,6 +128,7 @@ class Db {
      * @return array of arrays - fetched data
      */
     public static function prepQuery($sql, $types, $parameters) {
+        self::logQuery($sql, $parameters);
         self::connectIfNeeded();
 
         // Preparing Statement
@@ -170,6 +170,7 @@ class Db {
      * @return array of arrays - fetched data
      */
     public static function prepStmt($sql, $types, $parameters) {
+        self::logQuery($sql, $parameters);
         self::connectIfNeeded();
 
         // Preparing Statement
@@ -261,6 +262,23 @@ class Db {
         }
 
         return $result;
+    }
+
+    public static function logQuery($sql, $parameters) {
+        if (substr($sql, 0, 6) == 'SELECT') {
+            return; // No need to log SELECT Queries
+        }
+
+        // Generating log message
+        $message = DateTimeUtils::toDatabase(DateTimeUtils::now());
+        $currentUser = LoginDao::getCurrentUser();
+        $message .= ' '.(empty($currentUser) ? 'anonymous' : $currentUser->email).':'.LoginDao::clientIP();
+        $message .= ' '.$sql.(empty($parameters) ? '' : ' -> '.Json::encode($parameters))."\n";
+
+        // Writing message to the file
+        $file = fopen($_SERVER["DOCUMENT_ROOT"].'/logs/db_queries.log', 'a');
+        fwrite($file, $message);
+        fclose($file);
     }
 }
 ?>

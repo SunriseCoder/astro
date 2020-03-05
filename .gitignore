@@ -4,6 +4,9 @@
 # Environment configurations
 /config/env/
 
+# Logs
+/logs/*
+
 # Temporary data
 /tmp/
 

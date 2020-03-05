@@ -50,16 +50,14 @@ class PermissionDao {
     }
 
     public static function getAllByUserId($user_id) {
-        $sql =
-            '   SELECT DISTINCT
-                       p.id as id,
-                       p.code as code
-                  FROM users u
-             LEFT JOIN j_users_roles ur on ur.user_id = u.id
-             LEFT JOIN roles r on r.id = ur.role_id
-             LEFT JOIN j_roles_permissions rp on rp.role_id = r.id
-             LEFT JOIN permissions p on p.id = rp.permission_id
-                 WHERE u.id = ?';
+        $sql = 'SELECT DISTINCT p.id as id,
+                                p.code as code
+                           FROM users u
+                      LEFT JOIN j_users_roles ur on ur.user_id = u.id
+                      LEFT JOIN roles r on r.id = ur.role_id
+                      LEFT JOIN j_roles_permissions rp on rp.role_id = r.id
+                      LEFT JOIN permissions p on p.id = rp.permission_id
+                          WHERE u.id = ?';
         $permissionsResult = Db::prepQuery($sql, 'i', [$user_id]);
         $permissions = [];
         foreach ($permissionsResult as $permissionResult) {
@@ -114,8 +112,7 @@ class RoleDao {
 
     // TODO Add permissions fetch as well
     public static function getAllByUserId($user_id) {
-        $sql =
-            '   SELECT r.id id,
+        $sql = 'SELECT r.id id,
                        r.name name
                   FROM users u
              LEFT JOIN j_users_roles ur on ur.user_id = u.id

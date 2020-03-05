@@ -1,5 +1,5 @@
 <?php
-    // TODO Disable before release
+    // Disable for Production Environment
     ini_set('display_errors', 'On');
     error_reporting(E_ALL | E_STRICT);
 
@@ -19,8 +19,8 @@
         const DEBUG = 5;
         const TRACE = 6;
 
+        // Adjust for Production Environment
         const SHOW_STACKTRACE = TRUE;
-
         const LOG_LEVEL = self::WARNING;
 
         public static function isLevel($level) {
