@@ -3,7 +3,7 @@
 
     <title><?php echo $browser_title; ?></title>
 
-    <link rel="stylesheet" type="text/css" href="styles/styles.css">
+    <link rel="stylesheet" type="text/css" href="/styles/styles.css">
     <?
         if (isset($js_includes)) {
             foreach($js_includes as $js_include) {

@@ -16,7 +16,7 @@
     ?>
 
     <body>
-        <table>
+        <table id="page-markup-table">
             <tr>
                 <td colspan="2">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>

@@ -10,17 +10,17 @@
     ?>
 
     <body>
-        <table>
+        <table id="page-markup-table">
             <tr>
-                <td colspan="2">
+                <td id="page-top" colspan="2">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
                 </td>
             </tr>
             <tr>
-                <td class="menu">
+                <td id="page-menu">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/menu.php'; ?>
                 </td>
-                <td>
+                <td id="page-body">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
 
                     <? /* Body Area Start */ ?>
@@ -32,7 +32,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td id="page-footer" colspan="2">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
                 </td>
             </tr>
