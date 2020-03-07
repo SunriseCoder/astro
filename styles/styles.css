@@ -149,6 +149,7 @@ body {
 }
 
 .dropdown-content a {
+    cursor: pointer;
     color: black;
     padding: 4pt;
     text-decoration: none;
@@ -156,9 +157,6 @@ body {
 }
 
 .dropdown-content a.drop-down {
-    color: black;
-    padding: 4pt;
-    text-decoration: none;
     display: block;
 }
 

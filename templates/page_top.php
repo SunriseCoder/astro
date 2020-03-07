@@ -1,7 +1,6 @@
 <div class="header">
     <script type="text/javascript">
-        function setLanguage(element) {
-            var value = element.value;
+        function setLanguage(value) {
             document.cookie = "language=" + value + "; expires=Fri, 31 Dec 9999 23:59:59 GMT";
             location.reload(true);
         }
@@ -18,16 +17,16 @@
                     // Choose Language Dropdown list
                     echo '<div id="settings-div">';
                     echo '<div id="choose-language-div">';
-                    echo '<select id="language" onchange="setLanguage(this);">';
+                    echo '<div class="dropdown">';
+                    echo '<button class="dropdownbtn">'.Tr::getCurrentLanguage()->nameNative.' <img src="/images/arrow-down.png" /></button>';
+                    echo '<div id="dropdown-language-form-content" class="dropdown-content">';
+
+                    //echo '<select id="language" onchange="setLanguage(this);">';
                     $languages = Tr::getLanguages();
                     foreach ($languages as $language) {
-                        echo '<option value="'.$language->code.'"';
-                        if (isset($_COOKIE['language']) && $_COOKIE['language'] == $language->code) {
-                            echo ' selected="selected"';
-                        }
-                        echo '>'.$language->nameNative.'</option>';
+                        echo '<a class="drop-down" onclick="setLanguage(\''.$language->code.'\');">'.$language->nameNative.'</a>';
                     }
-                    echo '</select></div>';
+                    echo '</div></div></div>';
 
                     include $_SERVER["DOCUMENT_ROOT"].'/templates/login.php';
                     echo '</div>';

@@ -18,13 +18,11 @@
         ?>
         <script>
             function displayLoginForm() {
-                console.log('show');
-                document.getElementById('dropdown-form-content').style.display = 'block';
+                document.getElementById('dropdown-login-form-content').style.display = 'block';
                 document.getElementById('login-email-input').focus();
             }
             function hideLoginForm() {
-                console.log('hide');
-                document.getElementById('dropdown-form-content').style.display = 'none';
+                document.getElementById('dropdown-login-form-content').style.display = 'none';
             }
             function processKeyDown(event) {
                 if (event.keyCode == 13) { // Enter pressed
@@ -37,7 +35,7 @@
                 <?php echo Tr::trs('word.signIn', 'Sign In'); ?>
                 <img src="/images/arrow-down.png" />
             </button>
-            <div id="dropdown-form-content" class="dropdown-content">
+            <div id="dropdown-login-form-content" class="dropdown-content">
                 <form id="popup-login-form" action="/login.php" method="POST">
                     <table>
                         <tr>
