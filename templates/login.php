@@ -51,10 +51,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <!-- <td>
-                                <input type="submit" value="<?php echo Tr::trs('word.signIn', 'Sign In'); ?>" />
-                            </td> -->
-                            <td colspan="2">
+                            <td colspan="2" align="center">
                                 <a onclick="document.getElementById('popup-login-form').submit();"><?php echo Tr::trs('word.signIn', 'Sign In'); ?></a>
                                 <a href="register.php"><?php echo Tr::trs('word.signUp', 'Sign Up'); ?></a>
                                 <a onclick="hideLoginForm();"><?php echo Tr::trs('word.cancel', 'Cancel'); ?></a>

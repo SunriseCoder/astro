@@ -12,7 +12,7 @@
     <body>
         <table id="page-markup-table">
             <tr>
-                <td id="page-top" colspan="2">
+                <td id="page-top">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
                 </td>
             </tr>
@@ -20,6 +20,8 @@
                 <td id="page-menu">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/menu.php'; ?>
                 </td>
+            </tr>
+            <tr>
                 <td id="page-body">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
 
@@ -32,7 +34,7 @@
                 </td>
             </tr>
             <tr>
-                <td id="page-footer" colspan="2">
+                <td id="page-footer">
                     <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
                 </td>
             </tr>

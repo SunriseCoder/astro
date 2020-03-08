@@ -1,4 +1,4 @@
-// Font settings
+/* Font settings */
 @font-face {
     font-family: '__ScaHelvetica_5';
     src: url('/fonts/scahb___-webfont.eot');
@@ -21,16 +21,18 @@ body, p, li, table, tr, td {
 }
 
 body {
-    width: 800pt;
+    max-width: 600pt;
     margin: auto;
 }
 
+/* Page Markup */
 #page-markup-table {
     border-collapse: separate;
     border-spacing: 0;
     width: 100%;
 }
 
+/* Page Top */
 #page-top {
     width: 100%;
 
@@ -38,7 +40,6 @@ body {
     border-top: solid #1652B6 2pt;
     border-left: solid #1652B6 2pt;
     border-right: solid #1652B6 2pt;
-    border-bottom: solid #1652B6 1pt;
 
     text-align: center;
     vertical-align: middle;
@@ -49,8 +50,8 @@ body {
 }
 
 #page-top-logo-cell {
-    padding: 20pt;
     width: 1pt;
+    padding: 10pt;
 }
 
 #logo {
@@ -64,8 +65,10 @@ body {
 #settings-div {
     display: flex;
     position: absolute;
+
     top: 2pt;
-    right: 10pt;
+    right: 4pt;
+
     font-size: 11pt;
     color: black;
 }
@@ -75,42 +78,48 @@ body {
 }
 
 #page-top-content-cell p.page-title {
-    vertical-align: middle;
-    font-size: 27pt;
     margin-top: 0;
+    padding-top: 26pt;
+
+    color: #1652B6;
+    font-size: 20pt;
+
     text-align: center;
-    color: #1652B6
+    vertical-align: middle;
+    word-wrap: normal;
 }
 
+/* Menu */
 #page-menu {
-    min-width: 150pt;
-    max-width: 150pt;
-    width: 150pt;
+    display: flex;
+    justify-content: space-evenly;
 
     border-left: solid #1652B6 2pt;
-    border-right: solid #1652B6 1pt;
-    border-bottom: solid #1652B6 1pt;
+    border-right: solid #1652B6 2pt;
 
-    vertical-align: top;
-    padding: 10pt;
+    background-color: #1652B6;
 }
 
 #page-menu a {
+    padding: 10pt 0 10pt 0;
+
     text-decoration: none;
-    color: #1652B6;
+    color: white;
 }
 
 #page-menu a:hover {
     color: #E6AB1A
 }
 
+/* Page Body */
 #page-body {
+    border-left: solid #1652B6 2pt;
     border-right: solid #1652B6 2pt;
-    border-bottom: solid #1652B6 1pt;
 
-    padding: 10pt;
+    padding: 20pt;
 }
 
+/* Page Footer */
 #page-footer {
     height: 30pt;
 
@@ -124,7 +133,7 @@ body {
     text-align: center;
 }
 
-// DropDown Menu
+/* DropDown Menu */
 .dropdown {
     position: relative;
     display: inline-block;
@@ -140,20 +149,31 @@ body {
 .dropdown-content {
     display: none;
     position: absolute;
-    right: 0;
-    padding: 6pt;
-    background-color: #ccc;
     min-width: 160px;
+    right: 0;
+
+    border: solid #1652B6 1pt;
+
+    padding: 6pt;
+
+    color: black;
+    background-color: white;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
 }
 
+.dropdown-content table, tr, td {
+    color: inherit;
+    font-size: inherit;
+}
+
 .dropdown-content a {
-    cursor: pointer;
-    color: black;
-    padding: 4pt;
-    text-decoration: none;
     display: inline;
+    padding: 4pt;
+
+    cursor: pointer;
+    color: inherit;
+    text-decoration: none;
 }
 
 .dropdown-content a.drop-down {
@@ -166,8 +186,4 @@ body {
 
 .dropdown:hover .dropdown-content {
     display: block;
-}
-
-.dropdown:hover .dropbtn {
-    background-color: #3e8e41;
 }
