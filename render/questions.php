@@ -29,7 +29,7 @@
 
             $question = $questions[$questionId];
             if ($question->type->is(QuestionType::Complex)) {
-                $value = self::renderComplexAnswer($question, $answer);
+                $content = self::renderComplexAnswer($question, $answer);
             } else if (isset($answer->questionOptionId)) {
                 // Answer Value is a Reference to a QuestionOption
                 $questionOptionId = $answer->questionOptionId;
@@ -44,11 +44,11 @@
                         'Error: In the Answer with ID: {0} questionOptionId is set to: {1}, but there is no such Option in Question with ID: {2}');
                 }
                 $questionOption = $questionOptions[$questionOptionId];
-                $value = $questionOption->text;
+                $content = $questionOption->text;
             } else if ($answer->value) {
-                $value = $answer->value;
+                $content = $answer->value;
             }
-            return $value;
+            return $content;
         }
 
         public static function renderComplexAnswer($question, $answer) {
@@ -62,10 +62,10 @@
             }
 
             $questionObject = Json::decode($question->markup);
-            $result = '<table>';
+            $content = '<table>';
             // Table Header using Question Text
             foreach ($questionObject->subQuestions as $subQuestion) {
-                $result .= '<th>'.$subQuestion->text.'</th>';
+                $content .= '<th>'.$subQuestion->text.'</th>';
             }
 
             // SubQuestions' Options
@@ -80,62 +80,63 @@
 
             // Table Content
             foreach ($answerObject as $entry) {
-                $result .= '<tr>';
+                $content .= '<tr>';
                 $answers = [];
                 foreach ($entry as $key => $value) {
                     $answers[$key] = $value;
                 }
                 foreach ($questionObject->subQuestions as $subQuestion) {
-                    $result .= '<td>';
+                    $content .= '<td>';
                     if (isset($answers[$subQuestion->name])) {
                         $value = $answers[$subQuestion->name];
                         if (isset($subQuestion->options)) {
                             if (isset($questionOptions[$subQuestion->name][$value])) {
-                                $result .= $questionOptions[$subQuestion->name][$value]->text;
+                                $content .= $questionOptions[$subQuestion->name][$value]->text;
                             } else {
-                                $result .= Tr::trs('word.noAnswer', 'No Answer');
+                                $content .= Tr::trs('word.noAnswer', 'No Answer');
                             }
                         } else {
-                            $result .= $value;
+                            $content .= $value;
                         }
                     } else {
-                        $result .= Tr::trs('word.noAnswer', 'No Answer');
+                        $content .= Tr::trs('word.noAnswer', 'No Answer');
                     }
-                    $result .= '</td>';
+                    $content .= '</td>';
                 }
-                $result .= '</tr>';
+                $content .= '</tr>';
             }
-            $result .= '</table>';
+            $content .= '</table>';
 
-            return $result;
+            return $content;
         }
     }
 
     class QuestionRender {
         public static function renderQuestion($question) {
+            $content = '';
             // Render different layouts for different question types
             switch($question->type->code) {
                 case QuestionType::DateAndTime:
-                    echo $question->text.' <input type="datetime-local" name="answer-'.$question->id.'" />';
+                    $content .= $question->text.' <input type="datetime-local" name="answer-'.$question->id.'" />';
                     break;
                 case QuestionType::Date:
-                    echo $question->text.' <input type="date" name="answer-'.$question->id.'" />';
+                    $content .= $question->text.' <input type="date" name="answer-'.$question->id.'" />';
                     break;
                 case QuestionType::Time:
-                    echo $question->text.' <input type="time" name="answer-'.$question->id.'" />';
+                    $content .= $question->text.' <input type="time" name="answer-'.$question->id.'" />';
                     break;
                 case QuestionType::TextLine:
-                    echo $question->text.' <input type="text" name="answer-'.$question->id.'" />';
+                    $content .= $question->text.' <input type="text" name="answer-'.$question->id.'" />';
                     break;
                 case QuestionType::SingleChoice:
                     // Question Options Rendering
                     if ($question->options) {
-                        echo $question->text;
+                        $content .= $question->text;
                         foreach ($question->options as $questionOption) {
                             $group = 'answer-'.$question->id;
                             $value = $questionOption->id;
                             $text = $questionOption->text;
-                            echo '<br /><input type="radio" name="'.$group.'" value="'.$value.'">'.$text;
+                            $content .= '<br /><input type="radio" name="'.$group.'" value="'.$value.'">'.$text;
                         }
                     }
                     break;
@@ -145,27 +146,28 @@
                     $addEntryText = $metadata->addEntryText;
                     $subQuestions = $metadata->subQuestions;
 
-                    echo $question->text;
+                    $content .= $question->text;
 
                     // Metadata for adding Entry by JavaScript
-                    echo '<div id="questionRoot-'.$question->id.'"></div>';
-                    echo ' <button type="button" onclick="addQuestionEntry('.$question->id.')">'.$addEntryText.'</button>';
-                    echo '<script>';
-                    echo 'var subQuestions = [];';
+                    $content .= '<div id="questionRoot-'.$question->id.'"></div>';
+                    $content .= ' <button type="button" onclick="addQuestionEntry('.$question->id.')">'.$addEntryText.'</button>';
+                    $content .= '<script>';
+                    $content .= 'var subQuestions = [];';
                     foreach ($subQuestions as $subQuestion) {
-                        echo 'var subQuestionStr = \''.Json::encode($subQuestion).'\';';
-                        echo 'var subQuestion = JSON.parse(subQuestionStr);';
-                        echo 'subQuestions.push(subQuestion);';
+                        $content .= 'var subQuestionStr = \''.Json::encode($subQuestion).'\';';
+                        $content .= 'var subQuestion = JSON.parse(subQuestionStr);';
+                        $content .= 'subQuestions.push(subQuestion);';
                     }
-                    echo 'complexQuestions['.$question->id.'] = subQuestions;';
-                    echo '</script>';
+                    $content .= 'complexQuestions['.$question->id.'] = subQuestions;';
+                    $content .= '</script>';
                     break;
                 default:
                     Logger::error('Unsupported Question Type: '.$question->type->code);
                     $message = Tr::format('error.renderQuestion.unsupportedQuestionType', [$question->type->code], 'Unsupported QuestionType: {0}');
-                    echo '<font color="red">'.$message.'</font>';
+                    $content .= '<font color="red">'.$message.'</font>';
                     break;
             }
+            return $content;
         }
     }
 ?>

@@ -1,0 +1,43 @@
+.questions-table {
+    border-spacing: 0;
+}
+
+.questions-table th, td {
+    font-size: 14pt;
+    padding: 8pt;
+}
+
+.questions-table .table-top-single {
+    border: solid #E6AB1A 2pt;
+    border-radius: 10pt 10pt 0 0;
+}
+
+.questions-table .table-top-left {
+    border: solid #E6AB1A 2pt;
+    border-radius: 10pt 0 0 0;
+}
+
+.questions-table .table-top-right {
+    border-top: solid #E6AB1A 2pt;
+    border-right: solid #E6AB1A 2pt;
+    border-bottom: solid #E6AB1A 2pt;
+    border-radius: 0 10pt 0 0;
+}
+
+.questions-table .table-middle-first {
+    border-left: solid #E6AB1A 2pt;
+    border-right: solid #E6AB1A 2pt;
+    border-bottom: solid #E6AB1A 2pt;
+}
+
+.questions-table .table-middle {
+    border-right: solid #E6AB1A 2pt;
+    border-bottom: solid #E6AB1A 2pt;
+}
+
+.questions-table .table-bottom-single {
+    border-left: solid #E6AB1A 2pt;
+    border-right: solid #E6AB1A 2pt;
+    border-bottom: solid #E6AB1A 2pt;
+    border-radius: 0 0 10pt 10pt;
+}

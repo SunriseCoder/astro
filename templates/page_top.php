@@ -30,8 +30,6 @@
 
                     include $_SERVER["DOCUMENT_ROOT"].'/templates/login.php';
                     echo '</div>';
-
-                    echo '<p class="page-title">'.$page_title.'</p>';
                 ?>
             </td>
         </tr>

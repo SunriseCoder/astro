@@ -5,12 +5,21 @@ function addQuestionEntry(questionId) {
     var entryNumber = questionRoot.getElementsByTagName('table').length;
 
     var table = createElement('table', questionRoot);
+    table.className = 'questions-table';
 
     var subQuestions = complexQuestions[questionId];
-    subQuestions.forEach(subQuestion => {
+    for (var i = 0; i < subQuestions.length; i++) {
+        var subQuestion = subQuestions[i];
         var tr = createElement('tr', table);
         var td = createElement('td', tr);
-        createTextElement(subQuestion.text, td);
+        if (i == 0) {
+            td.className = 'table-top-single';
+        } else if (i < subQuestions.length - 1) {
+            td.className = 'table-middle-first';
+        } else {
+            td.className = 'table-bottom-single';
+        }
+        createTextElement(subQuestion.text + ' ', td);
 
         var inputName = 'answer-' + questionId + '-' + entryNumber + '-' + subQuestion.name;
 
@@ -51,7 +60,7 @@ function addQuestionEntry(questionId) {
         default:
             break;
         }
-    });
+    }
 
     createElement('br', questionRoot);
 }

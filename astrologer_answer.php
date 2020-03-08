@@ -120,7 +120,7 @@
                                     echo '</tr>';
                                     foreach ($questions as $question) {
                                         echo '<tr><td>'.$question->number.'</td><td>';
-                                        QuestionRender::renderQuestion($question);
+                                        echo QuestionRender::renderQuestion($question);
                                         echo '</td></tr>';
                                     }
                                     echo '</table>';

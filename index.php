@@ -1,43 +1,8 @@
 <?php
     if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
-?>
-<html>
-    <?
-        $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
-        $page_title = Tr::trs('page.index.pageTitle', 'The Chaitanya Academy ASTRO-PROJECT');
 
-        include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
-    ?>
+    $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
+    $page_title = Tr::trs('page.index.pageTitle', 'The Chaitanya Academy ASTRO-PROJECT');
+    $body_content = Tr::trs('page.index.text.surveyIntroduction');
 
-    <body>
-        <table id="page-markup-table">
-            <tr>
-                <td id="page-top">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
-                </td>
-            </tr>
-            <tr>
-                <td id="page-menu">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/menu.php'; ?>
-                </td>
-            </tr>
-            <tr>
-                <td id="page-body">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
-
-                    <? /* Body Area Start */ ?>
-
-                    <?php echo Tr::trs('page.index.text.surveyIntroduction'); ?>
-
-                    <? /* Body Area End */ ?>
-
-                </td>
-            </tr>
-            <tr>
-                <td id="page-footer">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
-                </td>
-            </tr>
-        </table>
-    </body>
-</html>
+    include $_SERVER["DOCUMENT_ROOT"].'/templates/page.php';

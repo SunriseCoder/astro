@@ -8,7 +8,7 @@
     }
 
     if (LoginDao::isLogged()) {
-        echo '<a href="questions.php">'.Tr::trs('menu.survey', 'Survey').'</a>';
+        echo '<a href="survey.php">'.Tr::trs('menu.survey', 'Survey').'</a>';
     }
 
     if (LoginDao::checkPermissions([Permission::AstrologerAnswering])) {
