@@ -62,10 +62,21 @@
             }
 
             $questionObject = Json::decode($question->markup);
-            $content = '<table>';
+            $content = '<table class="questions-table">';
             // Table Header using Question Text
-            foreach ($questionObject->subQuestions as $subQuestion) {
-                $content .= '<th>'.$subQuestion->text.'</th>';
+            $subQuestions = array_values($questionObject->subQuestions);
+            for ($i = 0; $i < count($subQuestions); $i++) {
+                $subQuestion = $subQuestions[$i];
+                if ($i == 0 && count($subQuestions) == 1) {
+                    $content .= '<th class="table-top-single">';
+                } else if ($i == 0 && count($subQuestions) > 1) {
+                    $content .= '<th class="table-top-left">';
+                } else if ($i < count($subQuestions) - 1) {
+                    $content .= '<th class="table-top-middle">';
+                } else {
+                    $content .= '<th class="table-top-right">';
+                }
+                $content .= $subQuestion->text.'</th>';
             }
 
             // SubQuestions' Options
@@ -79,14 +90,31 @@
             }
 
             // Table Content
-            foreach ($answerObject as $entry) {
+            $entries = array_values($answerObject);
+            for ($i = 0; $i < count($entries); $i++) {
+                $entry = $entries[$i];
                 $content .= '<tr>';
                 $answers = [];
                 foreach ($entry as $key => $value) {
                     $answers[$key] = $value;
                 }
-                foreach ($questionObject->subQuestions as $subQuestion) {
-                    $content .= '<td>';
+                for ($j = 0; $j < count($subQuestions); $j++) {
+                    $subQuestion = $subQuestions[$j];
+                    if ($i < (count($entries)) - 1) {
+                        // Not last row
+                        $content .= '<td class="'.($j == 0 ? 'table-middle-first' : 'table-middle').'">';
+                    } else {
+                        // Last row
+                        if ($j == 0 && count($subQuestions) == 1) {
+                            $content .= '<td class="table-bottom-single">';
+                        } else if ($j == 0) {
+                            $content .= '<td class="table-bottom-left">';
+                        } else if ($j < count($subQuestions) - 1) {
+                            $content .= '<td class="table-bottom-middle">';
+                        } else {
+                            $content .= '<td class="table-bottom-right">';
+                        }
+                    }
                     if (isset($answers[$subQuestion->name])) {
                         $value = $answers[$subQuestion->name];
                         if (isset($subQuestion->options)) {

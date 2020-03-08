@@ -51,15 +51,15 @@
 
                                 // Questions for the particular Table (Questionnaire);
                                 // Table Header
-                                $questions = [];
+                                $questionsMap = [];
                                 foreach ($allQuestions as $question) {
                                     if ($question->questionnaireId == $questionnaire->id) {
-                                        $questions[$question->id] = $question;
+                                        $questionsMap[$question->id] = $question;
                                     }
                                 }
-                                if (count($questions) > 0) {
+                                if (count($questionsMap) > 0) {
                                     echo '<th>'.Tr::trs('word.id', 'ID').'</th>';
-                                    foreach ($questions as $question) {
+                                    foreach ($questionsMap as $question) {
                                         echo '<th>'.$question->text.'</th>';
                                     }
                                     echo '<th>'.Tr::trs('word.status', 'Status').'</th>';
@@ -79,9 +79,9 @@
 
                                     echo '<tr>';
                                     echo '<td>'.$answerSession->id.'</td>';
-                                    foreach ($questions as $question) {
+                                    foreach ($questionsMap as $question) {
                                         $answer = isset($answers[$question->id]) ? $answers[$question->id] : NULL;
-                                        $value = AnswerRender::renderAnswer($questions, $answer);
+                                        $value = AnswerRender::renderAnswer($questionsMap, $answer);
                                         echo '<td>'.$value.'</td>';
                                     }
 

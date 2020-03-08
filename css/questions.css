@@ -17,6 +17,12 @@
     border-radius: 10pt 0 0 0;
 }
 
+.questions-table .table-top-middle {
+    border-top: solid #E6AB1A 2pt;
+    border-right: solid #E6AB1A 2pt;
+    border-bottom: solid #E6AB1A 2pt;
+}
+
 .questions-table .table-top-right {
     border-top: solid #E6AB1A 2pt;
     border-right: solid #E6AB1A 2pt;
@@ -40,4 +46,22 @@
     border-right: solid #E6AB1A 2pt;
     border-bottom: solid #E6AB1A 2pt;
     border-radius: 0 0 10pt 10pt;
+}
+
+.questions-table .table-bottom-left {
+    border-left: solid #E6AB1A 2pt;
+    border-right: solid #E6AB1A 2pt;
+    border-bottom: solid #E6AB1A 2pt;
+    border-radius: 0 0 0 10pt;
+}
+
+.questions-table .table-bottom-middle {
+    border-right: solid #E6AB1A 2pt;
+    border-bottom: solid #E6AB1A 2pt;
+}
+
+.questions-table .table-bottom-right {
+    border-right: solid #E6AB1A 2pt;
+    border-bottom: solid #E6AB1A 2pt;
+    border-radius: 0 0 10pt 0;
 }

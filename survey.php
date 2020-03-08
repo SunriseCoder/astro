@@ -8,8 +8,8 @@
 
     $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
     $page_title = Tr::trs('page.questions.pageTitle', 'Survey');
-    $js_includes = ['/js/questions.js'];
     $css_includes = ['/css/questions.css'];
+    $js_includes = ['/js/questions.js'];
     $body_content = '';
 
     // Saving Question Answers
@@ -25,22 +25,24 @@
         }
     } else {
         $body_content .= Tr::trs('page.questions.text.surveyInstructions');
-        $body_content .= '<form action="questions.php" method="post">';
 
-        $questions = QuestionDao::getDefaultQuestionnaire();
-        if (count($questions) > 0) {
+        $questionsMap = QuestionDao::getDefaultQuestionnaire();
+        if (count($questionsMap) > 0) {
+            $body_content .= '<form action="questions.php" method="post">';
             $body_content .= '<table class="questions-table">';
             $body_content .= '<tr>';
             $body_content .= '<th class="table-top-left">'.Tr::trs('word.question.numberShort', '#').'</th>';
             $body_content .= '<th class="table-top-right">'.Tr::trs('word.question.text', 'Text').'</th>';
             $body_content .= '</tr>';
-            foreach ($questions as $question) {
+            foreach ($questionsMap as $question) {
                 $body_content .= '<tr><td class="table-middle-first">'.$question->number.'</td>';
                 $body_content .= '<td class="table-middle">';
                 $body_content .= QuestionRender::renderQuestion($question);
                 $body_content .= '</td></tr>';
             }
-            $body_content .= '<tr><td class="table-bottom-single" colspan="2" align="center"><input type="submit" value="'.Tr::trs('word.send', 'Send').'" /></td></tr>';
+            $body_content .= '<tr><td class="table-bottom-single" colspan="2" align="center">';
+            $body_content .= '<input type="submit" value="'.Tr::trs('word.send', 'Send').'" />';
+            $body_content .= '</td></tr>';
             $body_content .= '</table>';
             $body_content .= '</form>';
         } else {
