@@ -5,145 +5,112 @@
     if (!isset($_GET['session_id']) || !preg_match('/^[0-9]+$/', $_GET['session_id'])) {
         Utils::redirect('/admin/answer_sessions_list.php');
     }
-?>
 
-<html>
-    <?
-        $browser_title = 'Chaitanya Academy - Answer Sessions';
-        $page_title = 'Answer Sessions - Administration';
+    include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php';
+    include $_SERVER["DOCUMENT_ROOT"].'/render/questions.php';
 
-        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
-    ?>
+    $browser_title = 'Chaitanya Academy - Answer Sessions';
+    $page_title = 'Answer Sessions - Administration';
+    $css_includes = ['/css/questions.css'];
+    $body_content = '';
 
-    <body>
-        <table id="page-markup-table">
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
-                </td>
-            </tr>
-            <tr>
-                <td class="menu">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?>
-                </td>
-                <td>
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
+    // Delete Answer Session
+    $answerSessionId = $_GET['session_id'];
+    $answerSessions = AnswerSessionDao::getWithAllAnswers($answerSessionId);
 
-                    <? /* Body Area Start */ ?>
+    if (count($answerSessions) > 0) {
+        $answerSession = $answerSessions[$answerSessionId];
+        $originSession = $answerSession->origin;
 
-                    <table>
-                        <?
-                            include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php';
-                            include $_SERVER["DOCUMENT_ROOT"].'/render/questions.php';
+        // Prepare Answer Maps
+        $originAnswersByQuestions = [];
+        if (isset($originSession)) {
+            foreach ($originSession->answers as $answer) {
+                $originAnswersByQuestions[$answer->questionId] = $answer;
+            }
+        }
 
-                            // Delete Answer Session
-                            $answerSessionId = $_GET['session_id'];
-                            $answerSessions = AnswerSessionDao::getWithAllAnswers($answerSessionId);
+        $answersByQuestions = [];
+        foreach ($answerSession->answers as $answer) {
+            $answersByQuestions[$answer->questionId] = $answer;
+        }
 
-                            if (count($answerSessions) > 0) {
-                                $answerSession = $answerSessions[$answerSessionId];
-                                $originSession = $answerSession->origin;
+        $questions = QuestionDao::getAllForAnswerSession($answerSessionId);
+        if (count($questions) > 0 ) {
+            // Table Headers
+            $body_content .= '<table class="admin-table">';
+            $body_content .=    '<tr>';
+            $body_content .=        '<th colspan="3">Question</th>';
+            $body_content .=        '<th colspan="3">Participant</th>';
+            if (isset($originSession)) {
+                $body_content .=    '<th colspan="3">Astrologer</th>';
+            }
+            $body_content .=    '</tr>';
+            $body_content .=    '<tr>';
+            $body_content .=        '<th>ID</th><th>Text</th><th>Type</th>';
+            $body_content .=        '<th>ID</th><th>Option</th><th>Text</th>';
+            if (isset($originSession)) {
+                $body_content .=    '<th>ID</th><th>Option</th><th>Text</th>';
+            }
+            $body_content .=    '</tr>';
 
-                                // Prepare Answer Maps
-                                $originAnswersByQuestions = [];
-                                if (isset($originSession)) {
-                                    foreach ($originSession->answers as $answer) {
-                                        $originAnswersByQuestions[$answer->questionId] = $answer;
-                                    }
-                                }
+            function renderAnswerCells($question, $answer) {
+                $content = '<td>'.$answer->id.'</td>';
+                if (isset($answer->questionOptionId)) {
+                    $option = $question->options[$answer->questionOptionId];
+                    $content .= '<td>'.$option->text.'</td>';
+                } else {
+                    $content .= '<td></td>';
+                }
+                if (!empty($answer->value)) {
+                    $content .= '<td>';
+                    $content .= $question->type->is(QuestionType::Complex) ? AnswerRender::renderComplexAnswer($question, $answer) : $answer->value;
+                    $content .= '</td>';
+                } else {
+                    $content .= '<td></td>';
+                }
+                return $content;
+            }
 
-                                $answersByQuestions = [];
-                                foreach ($answerSession->answers as $answer) {
-                                    $answersByQuestions[$answer->questionId] = $answer;
-                                }
+            // Table Content
+            foreach ($questions as $question) {
+                $body_content .= '<tr>';
+                // Questions
+                $body_content .= '<td>'.$question->id.'</td>';
+                $body_content .= '<td>';
+                if (!empty($question->number)) {
+                    $body_content .= $question->number.') ';
+                }
+                $body_content .= $question->text;
+                $body_content .= '</td>';
+                $body_content .= '<td>'.$question->type->code.'</td>';
 
-                                $questions = QuestionDao::getAllForAnswerSession($answerSessionId);
-                                if (count($questions) > 0 ) {
-                                    // Table Headers
-                                    echo '<table>';
-                                    echo    '<tr>';
-                                    echo        '<th colspan="3">Question</th>';
-                                    echo        '<th colspan="3">Participant</th>';
-                                    if (isset($originSession)) {
-                                        echo    '<th colspan="3">Astrologer</th>';
-                                    }
-                                    echo    '</tr>';
-                                    echo    '<tr>';
-                                    echo        '<th>ID</th><th>Text</th><th>Type</th>';
-                                    echo        '<th>ID</th><th>Option</th><th>Text</th>';
-                                    if (isset($originSession)) {
-                                        echo    '<th>ID</th><th>Option</th><th>Text</th>';
-                                    }
-                                    echo    '</tr>';
+                // Participant's Answers
+                if (isset($originSession)) {
+                    if (isset($originAnswersByQuestions[$question->id])) {
+                        $answer = $originAnswersByQuestions[$question->id];
+                        $body_content .= renderAnswerCells($question, $answer);
+                    } else {
+                        $body_content .= '<td colspan="3"></td>';
+                    }
+                }
 
-                                    function renderAnswerCells($question, $answer) {
-                                        echo '<td>'.$answer->id.'</td>';
-                                        if (isset($answer->questionOptionId)) {
-                                            $option = $question->options[$answer->questionOptionId];
-                                            echo '<td>'.$option->text.'</td>';
-                                        } else {
-                                            echo '<td></td>';
-                                        }
-                                        if (!empty($answer->value)) {
-                                            echo '<td>';
-                                            echo $question->type->is(QuestionType::Complex) ? AnswerRender::renderComplexAnswer($question, $answer) : $answer->value;
-                                            echo '</td>';
-                                        } else {
-                                            echo '<td></td>';
-                                        }
-                                    }
+                // Astrologer's Answers
+                if (isset($answersByQuestions[$question->id])) {
+                    $answer = $answersByQuestions[$question->id];
+                    $body_content .= renderAnswerCells($question, $answer);
+                } else {
+                    $body_content .= '<td colspan="3"></td>';
+                }
 
-                                    // Table Content
-                                    foreach ($questions as $question) {
-                                        echo '<tr>';
-                                        // Questions
-                                        echo '<td>'.$question->id.'</td>';
-                                        echo '<td>';
-                                        if (!empty($question->number)) {
-                                            echo $question->number.') ';
-                                        }
-                                        echo $question->text;
-                                        echo '</td>';
-                                        echo '<td>'.$question->type->code.'</td>';
+                $body_content .= '</tr>';
+            }
+            $body_content .= '</table>';
+        } else {
+            $body_content .= 'No questions found for Answer Session: '.$answerSessionId;
+        }
+    } else {
+        $body_content .= 'Answer Session with ID: '.$answerSessionId.' was not found';
+    }
 
-                                        // Participant's Answers
-                                        if (isset($originSession)) {
-                                            if (isset($originAnswersByQuestions[$question->id])) {
-                                                $answer = $originAnswersByQuestions[$question->id];
-                                                renderAnswerCells($question, $answer);
-                                            } else {
-                                                echo '<td colspan="3"></td>';
-                                            }
-                                        }
-
-                                        // Astrologer's Answers
-                                        if (isset($answersByQuestions[$question->id])) {
-                                            $answer = $answersByQuestions[$question->id];
-                                            renderAnswerCells($question, $answer);
-                                        } else {
-                                            echo '<td colspan="3"></td>';
-                                        }
-
-                                        echo '</tr>';
-                                    }
-                                } else {
-                                    echo 'No questions found for Answer Session: '.$answerSessionId;
-                                }
-                            } else {
-                                echo 'Answer Session with ID: '.$answerSessionId.' was not found';
-                            }
-                        ?>
-                    </table>
-
-                    <? /* Body Area End */ ?>
-
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
-                </td>
-            </tr>
-        </table>
-    </body>
-</html>
+    include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';

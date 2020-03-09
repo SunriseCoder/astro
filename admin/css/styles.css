@@ -1,0 +1,56 @@
+body {
+    max-width: 100%;
+}
+
+/* Menu */
+#page-menu-admin {
+    display: inline-block;
+    height: 100%;
+    width: 150pt;
+
+    border-left: solid #1652B6 2pt;
+    border-right: solid #1652B6 2pt;
+
+    vertical-align: top;
+    padding: 10pt;
+}
+#page-menu-admin table {
+    width: 100%;
+}
+
+#page-menu-admin td {
+    padding: 2pt 0 2pt 20pt;
+}
+
+#page-menu-admin a {
+    font-weight: bold;
+    text-decoration: none;
+    color: #1652B6;
+}
+
+#page-menu-admin a:hover {
+    color: #E6AB1A;
+}
+
+/* Page Body */
+#page-body-admin {
+    width: 100%;
+    height: 100%;
+
+    border-right: solid #1652B6 2pt;
+
+    vertical-align: top;
+    padding: 20pt;
+}
+
+/* Admin Tables */
+.admin-table {
+    border-collapse: collapse;
+    border: solid #E6AB1A 2pt;
+}
+
+.admin-table th,
+.admin-table td {
+    border: solid #E6AB1A 2pt;
+    padding: 5pt;
+}

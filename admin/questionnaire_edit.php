@@ -3,90 +3,57 @@
     LoginDao::checkPermissionsAndRedirect([Permission::QuestionsView], './');
 
     if (!class_exists('Question')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
-?>
-<html>
-    <?
-        $browser_title = 'Chaitanya Academy - Questionnaires';
-        $page_title = 'Questionnaire - Edit';
 
-        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
-    ?>
+    $browser_title = 'Chaitanya Academy - Questionnaires';
+    $page_title = 'Questionnaire - Edit';
+    $body_content = '';
 
-    <body>
-        <table id="page-markup-table">
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
-                </td>
-            </tr>
-            <tr>
-                <td class="menu">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?>
-                </td>
-                <td>
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
+    // Parsing Questionnaire by given ID
+    if (isset($_GET['id'])) {
+        $questionnaireId = $_GET['id'];
+        $questionnaire = QuestionnaireDao::getById($questionnaireId);
+        if (isset($questionnaire)) {
+            $body_content .= '<div>'.$questionnaire->name.':</div>';
 
-                    <? /* Body Area Start */ ?>
+            // Parsing Questions for the Questionnaire
+            $questions = QuestionDao::getAllForQuestionnaire($questionnaire->id);
+            if (count($questions) > 0) {
+                $body_content .= '<table class="admin-table">';
+                $body_content .= '<tr>
+                        <th>ID</th>
+                        <th>Number</th>
+                        <th>Text</th>
+                        <th>Type</th>
+                        <th>Options</th>
+                        <th>Position</th>
+                        <th>Actions</th>
+                      </tr>';
 
-                    <?
-                        // Parsing Questionnaire by given ID
-                        if (isset($_GET['id'])) {
-                            $questionnaireId = $_GET['id'];
-                            $questionnaire = QuestionnaireDao::getById($questionnaireId);
-                            if (isset($questionnaire)) {
-                                echo '<div>'.$questionnaire->name.':</div>';
+                // Questions List
+                foreach ($questions as $question) {
+                    $body_content .= '<tr>';
+                    $body_content .= '<td>'.$question->id.'</td>';
+                    $body_content .= '<td>'.$question->number.'</td>';
+                    $body_content .= '<td>'.$question->text.'</td>';
+                    $body_content .= '<td>'.$question->type->name.'</td>';
+                    $body_content .= '<td>';
+                    foreach ($question->options as $questionOption) {
+                        $body_content .= $questionOption->text.'<br />';
+                    }
+                    $body_content .= '</td>';
+                    $body_content .= '<td>'.$question->position.'</td>';
+                    $body_content .= '<td><a href="question_edit.php?id='.$question->id.'">Edit</a></td>';
+                    $body_content .= '</tr>';
+                }
+                $body_content .= '</table>';
+            }
+            $body_content .= count($questions).' question(s)<br />';
+            $body_content .= '<a href="question_edit.php?questionnaire_id='.$questionnaire->id.'">Add New Question</a>';
+        } else {
+            $body_content .= 'Questionnaire with ID '.$questionnaire->id.' is not found';
+        }
+    } else {
+        $body_content .= 'Questionnaire ID is not set';
+    }
 
-                                // Parsing Questions for the Questionnaire
-                                $questions = QuestionDao::getAllForQuestionnaire($questionnaire->id);
-                                if (count($questions) > 0) {
-                                    echo '<table>';
-                                    echo '<tr>
-                                            <th>ID</th>
-                                            <th>Number</th>
-                                            <th>Text</th>
-                                            <th>Type</th>
-                                            <th>Options</th>
-                                            <th>Position</th>
-                                            <th>Actions</th>
-                                          </tr>';
-
-                                    // Questions List
-                                    foreach ($questions as $question) {
-                                        echo '<tr>';
-                                        echo '<td>'.$question->id.'</td>';
-                                        echo '<td>'.$question->number.'</td>';
-                                        echo '<td>'.$question->text.'</td>';
-                                        echo '<td>'.$question->type->name.'</td>';
-                                        echo '<td>';
-                                        foreach ($question->options as $questionOption) {
-                                            echo $questionOption->text.'<br />';
-                                        }
-                                        echo '</td>';
-                                        echo '<td>'.$question->position.'</td>';
-                                        echo '<td><a href="question_edit.php?id='.$question->id.'">Edit</a></td>';
-                                        echo '</tr>';
-                                    }
-                                    echo '</table>';
-                                }
-                                echo count($questions).' question(s)<br />';
-                                echo '<a href="question_edit.php?questionnaire_id='.$questionnaire->id.'">Add New Question</a>';
-                            } else {
-                                echo 'Questionnaire with ID '.$questionnaire->id.' is not found';
-                            }
-                        } else {
-                            echo 'Questionnaire ID is not set';
-                        }
-                    ?>
-
-                    <? /* Body Area End */ ?>
-
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
-                </td>
-            </tr>
-        </table>
-    </body>
-</html>
+    include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';

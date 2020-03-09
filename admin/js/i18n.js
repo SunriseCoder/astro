@@ -89,6 +89,7 @@ function renderTranslationTable() {
     translationsMap = createTranslationsMap(translationData.translations);
 
     var table = createElement('table', translationRoot);
+    table.className = 'admin-table';
     var tr = createElement('tr', table);
 
     // Table Header

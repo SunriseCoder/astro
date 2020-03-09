@@ -3,80 +3,48 @@
     LoginDao::checkPermissionsAndRedirect([Permission::QuestionsView], './');
 
     if (!class_exists('Question')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
-?>
-<html>
-    <?
-        $browser_title = 'Chaitanya Academy - Questions';
-        $page_title = 'Questions - Administration';
 
-        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
-    ?>
+    $browser_title = 'Chaitanya Academy - Questions';
+    $page_title = 'Questions - Administration';
+    $body_content = '';
 
-    <body>
-        <table id="page-markup-table">
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
-                </td>
-            </tr>
-            <tr>
-                <td class="menu">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?></td>
-                <td>
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
+    $questionnaires = QuestionnaireDao::getAll();
+    $questions = QuestionDao::getAll();
+    if (count($questions) > 0) {
+        $body_content .= '<table class="admin-table">';
+        $body_content .= '<tr>
+                <th>ID</th>
+                <th>Number</th>
+                <th>Text</th>
+                <th>Type</th>
+                <th>Options</th>
+                <th>Position</th>
+                <th>Questionnaire</th>
+                <th>Actions</th>
+              </tr>';
+        foreach ($questions as $question) {
+            $body_content .= '<tr>';
+            $body_content .= '<td>'.$question->id.'</td>';
+            $body_content .= '<td>'.$question->number.'</td>';
+            $body_content .= '<td>'.$question->text.'</td>';
+            $body_content .= '<td>'.$question->type->name.'</td>';
+            $body_content .= '<td>';
+            foreach ($question->options as $questionOption) {
+                $body_content .= $questionOption->text.'<br />';
+            }
+            $body_content .= '</td>';
+            $body_content .= '<td>'.$question->position.'</td>';
+            $body_content .= '<td>'.$questionnaires[$question->questionnaireId]->name.'</td>';
+            $body_content .= '<td>';
+            if (LoginDao::checkPermissions([Permission::QuestionsEdit])) {
+                $body_content .= '<a href="question_edit.php?id='.$question->id.'">Edit</a>';
+            }
+            $body_content .= '</td>';
+            $body_content .= '</tr>';
+        }
+        $body_content .= '</table>';
+    } else {
+        $body_content .= '0 Questions';
+    }
 
-                    <? /* Body Area Start */ ?>
-
-                    <?php
-                        $questionnaires = QuestionnaireDao::getAll();
-                        $questions = QuestionDao::getAll();
-                        if (count($questions) > 0) {
-                            echo '<table>';
-                            echo '<tr>
-                                    <th>ID</th>
-                                    <th>Number</th>
-                                    <th>Text</th>
-                                    <th>Type</th>
-                                    <th>Options</th>
-                                    <th>Position</th>
-                                    <th>Questionnaire</th>
-                                    <th>Actions</th>
-                                  </tr>';
-                            foreach ($questions as $question) {
-                                echo '<tr>';
-                                echo '<td>'.$question->id.'</td>';
-                                echo '<td>'.$question->number.'</td>';
-                                echo '<td>'.$question->text.'</td>';
-                                echo '<td>'.$question->type->name.'</td>';
-                                echo '<td>';
-                                foreach ($question->options as $questionOption) {
-                                    echo $questionOption->text.'<br />';
-                                }
-                                echo '</td>';
-                                echo '<td>'.$question->position.'</td>';
-                                echo '<td>'.$questionnaires[$question->questionnaireId]->name.'</td>';
-                                echo '<td>';
-                                if (LoginDao::checkPermissions([Permission::QuestionsEdit])) {
-                                    echo '<a href="question_edit.php?id='.$question->id.'">Edit</a>';
-                                }
-                                echo '</td>';
-                                echo '</tr>';
-                            }
-                            echo '</table>';
-                        } else {
-                            echo '<tr><td colspan="2">0 results</td></tr>';
-                        }
-                    ?>
-
-                    <? /* Body Area End */ ?>
-
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
-                </td>
-            </tr>
-        </table>
-    </body>
-</html>
+    include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';

@@ -1,40 +1,19 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
     LoginDao::checkPermissionsAndRedirect([Permission::TranslationsView], './');
-?>
-<html>
-    <?
-        $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'Translation';
 
-        $js_includes = array('js/i18n.js');
+    $browser_title = 'Chaitanya Academy - Astrology';
+    $page_title = 'Translation';
+    $js_includes = ['js/i18n.js'];
 
-        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
-    ?>
-
-    <body>
-        <table id="page-markup-table">
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
-                </td>
-            </tr>
-            <tr>
-                <td class="menu">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?>
-                </td>
-                <td>
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
-
-                    <? /* Body Area Start */ ?>
-
+    $body_content = '
                     <!-- Edit Form -->
                     <div id="editFormDiv"></div>
                     <form id="translationForm">
                         <input id="translationId" type="hidden" name="id" value="" />
                         <input id="keywordId" type="hidden" name="keyword_id" value="" />
                         <input id="languageId" type="hidden" name="language_id" value="" />
-                        <table>
+                        <table class="admin-table">
                             <tr>
                                 <td>Keyword</td>
                                 <td id="keywordCell"></td>
@@ -65,27 +44,10 @@
                     </div>
 
                     <!-- Table Placeholder -->
-                    <div id="translationsRoot"></div>
+                    <div id="translationsRoot"></div>';
 
-                    <?php
-                        if (!class_exists('Json')) {
-                            include $_SERVER["DOCUMENT_ROOT"].'/utils/json.php';
-                        }
+    $body_content .= '<script>';
+    $body_content .= 'refreshTranslationData();';
+    $body_content .= '</script>';
 
-                        echo '<script>';
-                        echo 'refreshTranslationData();';
-                        echo '</script>';
-                    ?>
-
-                    <? /* Body Area End */ ?>
-
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
-                </td>
-            </tr>
-        </table>
-    </body>
-</html>
+    include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';

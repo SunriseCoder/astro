@@ -1,138 +1,105 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
     LoginDao::checkPermissionsAndRedirect([Permission::UsersView], './');
-?>
-<html>
-    <?
-        $browser_title = 'Chaitanya Academy - Astrology';
-        $page_title = 'Users View';
 
-        include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/metadata.php';
-    ?>
+    $browser_title = 'Chaitanya Academy - Astrology';
+    $page_title = 'Users View';
+    $body_content = '';
 
-    <body>
-        <table id="page-markup-table">
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
-                </td>
-            </tr>
-            <tr>
-                <td class="menu">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/menu.php'; ?>
-                </td>
-                <td>
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
+    // Users Table
+    $body_content .= '<h3>Users</h3>';
+    $users = UserDao::getAll();
+    if (count($users) > 0) {
+        $body_content .= '<table class="admin-table">';
+        $body_content .= '<th>ID</th>';
+        $body_content .= '<th>Name</th>';
+        $body_content .= '<th>E-Mail</th>';
+        $body_content .= '<th>Active</th>';
+        $body_content .= '<th>Roles</th>';
+        $body_content .= '<th>Permissions</th>';
 
-                    <? /* Body Area Start */ ?>
+        foreach ($users as $user) {
+            $body_content .= '<tr>';
+            $body_content .= '<td>'.$user->id.'</td>';
+            $body_content .= '<td>'.$user->name.'</td>';
+            $body_content .= '<td>'.$user->email.'</td>';
+            $body_content .= '<td>'.$user->active.'</td>';
+            // Roles
+            $body_content .= '<td>';
+            foreach ($user->roles as $role) {
+                $body_content .= $role->id.': '.$role->name.'<br />';
+            }
+            $body_content .= '</td>';
+            // Permissions
+            $body_content .= '<td>';
+            foreach ($user->permissions as $permission) {
+                $body_content .= $permission->id.': '.$permission->code.'<br />';
+            }
+            $body_content .= '</td>';
+            $body_content .= '</tr>';
+        }
 
-                    <?php
-                        // Users Table
-                        echo '<h3>Users</h3>';
-                        $users = UserDao::getAll();
-                        if (count($users) > 0) {
-                            echo '<table border="1">';
-                            echo '<th>ID</th>';
-                            echo '<th>Name</th>';
-                            echo '<th>E-Mail</th>';
-                            echo '<th>Active</th>';
-                            echo '<th>Roles</th>';
-                            echo '<th>Permissions</th>';
+        $body_content .= '</table>';
+    } else {
+        $body_content .= 'No Users was found.';
+    }
+    $body_content .= '<br />';
 
-                            foreach ($users as $user) {
-                                echo '<tr>';
-                                echo '<td>'.$user->id.'</td>';
-                                echo '<td>'.$user->name.'</td>';
-                                echo '<td>'.$user->email.'</td>';
-                                echo '<td>'.$user->active.'</td>';
-                                // Roles
-                                echo '<td>';
-                                foreach ($user->roles as $role) {
-                                    echo $role->id.': '.$role->name.'<br />';
-                                }
-                                echo '</td>';
-                                // Permissions
-                                echo '<td>';
-                                foreach ($user->permissions as $permission) {
-                                    echo $permission->id.': '.$permission->code.'<br />';
-                                }
-                                echo '</td>';
-                                echo '</tr>';
-                            }
+    // Roles and Permissions Markup Table
+    $body_content .= '<table>';
+    $body_content .= '<tr>';
+    $body_content .= '<th><h3>Roles</h3></th>';
+    $body_content .= '<th><h3>Permissions</h3></th>';
+    $body_content .= '</tr><tr>';
+    $body_content .= '<td valign="top">';
 
-                            echo '</table>';
-                        } else {
-                            echo 'No Users was found.';
-                        }
-                        echo '<br />';
+    // Roles Table
+    $roles = RoleDao::getAll();
+    if (count($roles) > 0) {
+        $body_content .= '<table class="admin-table">';
+        $body_content .= '<th>ID</th>';
+        $body_content .= '<th>Name</th>';
+        $body_content .= '<th>Permissions</th>';
 
-                        // Roles and Permissions Markup Table
-                        echo '<table>';
-                        echo '<tr>';
-                        echo '<th><h3>Roles</h3></th>';
-                        echo '<th><h3>Permissions</h3></th>';
-                        echo '</tr><tr>';
-                        echo '<td valign="top">';
+        foreach ($roles as $role) {
+            $body_content .= '<tr>';
+            $body_content .= '<td>'.$role->id.'</td>';
+            $body_content .= '<td>'.$role->name.'</td>';
+            // Permissions
+            $body_content .= '<td>';
+            foreach ($role->permissions as $permission) {
+                $body_content .= $permission->id.': '.$permission->code.'<br />';
+            }
+            $body_content .= '</td>';
+            $body_content .= '</tr>';
+        }
 
-                        // Roles Table
-                        $roles = RoleDao::getAll();
-                        if (count($roles) > 0) {
-                            echo '<table border="1">';
-                            echo '<th>ID</th>';
-                            echo '<th>Name</th>';
-                            echo '<th>Permissions</th>';
+        $body_content .= '</table>';
+    } else {
+        $body_content .= 'No Roles was found.';
+    }
 
-                            foreach ($roles as $role) {
-                                echo '<tr>';
-                                echo '<td>'.$role->id.'</td>';
-                                echo '<td>'.$role->name.'</td>';
-                                // Permissions
-                                echo '<td>';
-                                foreach ($role->permissions as $permission) {
-                                    echo $permission->id.': '.$permission->code.'<br />';
-                                }
-                                echo '</td>';
-                                echo '</tr>';
-                            }
+    $body_content .= '</td><td valign="top">';
 
-                            echo '</table>';
-                        } else {
-                            echo 'No Roles was found.';
-                        }
+    // Permissions Table
+    $permissions = PermissionDao::getAll();
+    if (count($permissions) > 0) {
+        $body_content .= '<table class="admin-table">';
+        $body_content .= '<th>ID</th>';
+        $body_content .= '<th>Code</th>';
 
-                        echo '</td><td valign="top">';
+        foreach ($permissions as $permission) {
+            $body_content .= '<tr>';
+            $body_content .= '<td>'.$permission->id.'</td>';
+            $body_content .= '<td>'.$permission->code.'</td>';
+            $body_content .= '</tr>';
+        }
 
-                        // Permissions Table
-                        $permissions = PermissionDao::getAll();
-                        if (count($permissions) > 0) {
-                            echo '<table border="1">';
-                            echo '<th>ID</th>';
-                            echo '<th>Code</th>';
+        $body_content .= '</table>';
+    } else {
+        $body_content .= 'No Permissions was found.';
+    }
 
-                            foreach ($permissions as $permission) {
-                                echo '<tr>';
-                                echo '<td>'.$permission->id.'</td>';
-                                echo '<td>'.$permission->code.'</td>';
-                                echo '</tr>';
-                            }
+    $body_content .= '</td></tr></table>';
 
-                            echo '</table>';
-                        } else {
-                            echo 'No Permissions was found.';
-                        }
-
-                        echo '</td></tr></table>';
-                    ?>
-
-                    <? /* Body Area End */ ?>
-
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
-                </td>
-            </tr>
-        </table>
-    </body>
-</html>
+    include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';

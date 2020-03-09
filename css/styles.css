@@ -46,6 +46,7 @@ body {
     border-top: solid #1652B6 2pt;
     border-left: solid #1652B6 2pt;
     border-right: solid #1652B6 2pt;
+    border-bottom: solid #1652B6 2pt;
 
     text-align: center;
     vertical-align: middle;
@@ -107,7 +108,7 @@ p.page-title {
 }
 
 #page-menu a {
-    padding: 10pt 0 10pt 0;
+    padding: 9pt 0 9pt 0;
 
     font-weight: bold;
     text-decoration: none;
