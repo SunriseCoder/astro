@@ -15,7 +15,7 @@ function addQuestionEntry(questionId) {
         if (i == 0) {
             td.className = 'table-top-single';
         } else if (i < subQuestions.length - 1) {
-            td.className = 'table-middle-first';
+            td.className = 'table-middle-left';
         } else {
             td.className = 'table-bottom-single';
         }

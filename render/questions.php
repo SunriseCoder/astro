@@ -102,7 +102,7 @@
                     $subQuestion = $subQuestions[$j];
                     if ($i < (count($entries)) - 1) {
                         // Not last row
-                        $content .= '<td class="'.($j == 0 ? 'table-middle-first' : 'table-middle').'">';
+                        $content .= '<td class="'.($j == 0 ? 'table-middle-left' : 'table-middle-middle').'">';
                     } else {
                         // Last row
                         if ($j == 0 && count($subQuestions) == 1) {

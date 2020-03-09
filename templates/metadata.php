@@ -16,6 +16,11 @@
                 echo '<link rel="stylesheet" type="text/css" href="'.$css_include.'">';
             }
         }
+
+        if (isset($style)) {
+            echo '<style>'.$style.'</style>';
+        }
+
         if (isset($js_includes)) {
             foreach($js_includes as $js_include) {
                 echo '<script type="text/javascript" src="'.$js_include.'"></script>';

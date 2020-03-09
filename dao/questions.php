@@ -175,7 +175,9 @@
 
             $answers = AnswerDao::getAllNonSecret();
             foreach ($answers as $answer) {
-                $answerSessions[$answer->sessionId]->answers[$answer->id] = $answer;
+                if (isset($answerSessions[$answer->sessionId])) {
+                    $answerSessions[$answer->sessionId]->answers[$answer->id] = $answer;
+                }
             }
 
             return $answerSessions;

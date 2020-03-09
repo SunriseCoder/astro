@@ -81,8 +81,8 @@
                     $body_content .= '<tr>';
                     if ($i < count($questions) - 1) {
                         // Not last row
-                        $body_content .= '<td class="table-middle-first">'.$question->text.'</td>';
-                        $body_content .= '<td class="table-middle">'.$value.'</td>';
+                        $body_content .= '<td class="table-middle-left">'.$question->text.'</td>';
+                        $body_content .= '<td class="table-middle-middle">'.$value.'</td>';
                     } else {
                         // Last row
                         $body_content .= '<td class="table-bottom-left">'.$question->text.'</td>';
@@ -108,8 +108,8 @@
                 $body_content .= '<th class="table-top-right">'.Tr::trs('word.question.text', 'Text').'</th>';
                 $body_content .= '</tr>';
                 foreach ($questionsMap as $question) {
-                    $body_content .= '<tr><td class="table-middle-first">'.$question->number.'</td>';
-                    $body_content .= '<td class="table-middle">';
+                    $body_content .= '<tr><td class="table-middle-left">'.$question->number.'</td>';
+                    $body_content .= '<td class="table-middle-middle">';
                     $body_content .= QuestionRender::renderQuestion($question);
                     $body_content .= '</td></tr>';
                 }
