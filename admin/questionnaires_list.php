@@ -7,8 +7,8 @@
     $body_content = '';
 
     $sql = "SELECT id, name, is_active FROM questionnaires";
-    $result = Db::query($sql);
-    if (count($result) > 0) {
+    $error = Db::query($sql);
+    if (count($error) > 0) {
         $body_content .= '<table class="admin-table">';
         $body_content .= '<tr>
                 <th>ID</th>
@@ -16,7 +16,7 @@
                 <th>Status</th>
                 <th>Actions</th>
               </tr>';
-        foreach ($result as $row) {
+        foreach ($error as $row) {
             $body_content .= '<tr>';
             $body_content .= '<td>'.$row['id'].'</td>';
             $body_content .= '<td>'.$row['name'].'</td>';

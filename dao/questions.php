@@ -24,6 +24,7 @@
         public $ipAddress;
         public $date;
         public $answers = [];
+        public $descendantsCount;
     }
 
     class Question {
@@ -140,7 +141,7 @@
             return $result;
         }
 
-        public static function hasAlreadyAnswered() {
+        public static function hasCurrentUserAlreadyAnswered() {
             $sql = 'SELECT count(1) as c FROM answer_sessions WHERE origin_id IS NULL AND user_id = ?';
             $user = LoginDao::getCurrentUser();
             if (!$user) {
@@ -161,7 +162,12 @@
         }
 
         public static function get($id) {
-            $sql = 'SELECT * FROM answer_sessions WHERE id = ?';
+            $sql = 'SELECT ast.*,
+                           (SELECT COUNT(1)
+                              FROM answer_sessions
+                             WHERE origin_id = ast.id) as descendants_count
+                      FROM answer_sessions ast
+                     WHERE ast.id = ?';
             $sessionsResult = Db::prepQuery($sql, 'i', [$id]);
             $answerSessions = self::fetchSessions($sessionsResult);
             $result = isset($answerSessions[$id]) ? $answerSessions[$id] : NULL;
@@ -169,7 +175,16 @@
         }
 
         public static function getAllOriginsWithNonSecretAnswers() {
-            $sql = 'SELECT * FROM answer_sessions WHERE origin_id IS NULL ORDER BY id';
+            $sql = 'SELECT ast.*,
+                           COALESCE(d.descendants_count, 0) as descendants_count
+                      FROM answer_sessions ast
+                 LEFT JOIN (SELECT origin_id as id,
+                                   count(1) as descendants_count
+                              FROM answer_sessions
+                             WHERE origin_id IS NOT NULL
+                          GROUP BY origin_id) d on d.id = ast.id
+                     WHERE ast.origin_id IS NULL
+                  ORDER BY ast.id';
             $sessionsResult = Db::query($sql);
             $answerSessions = self::fetchSessions($sessionsResult);
 
@@ -185,7 +200,12 @@
 
         public static function getWithAllAnswers($answerSessionId) {
             // Loading Answer Session itself
-            $sql = 'SELECT * FROM answer_sessions WHERE id = ?';
+            $sql = 'SELECT ast.*,
+                           (SELECT COUNT(1)
+                              FROM answer_sessions
+                             WHERE origin_id = ast.id) as descendants_count
+                      FROM answer_sessions ast
+                     WHERE ast.id = ?';
             $sessionsResult = Db::prepQuery($sql, 'i', [$answerSessionId]);
             $answerSessions = self::fetchSessions($sessionsResult);
 
@@ -205,7 +225,12 @@
         }
 
         public static function getWithNonSecretAnswers($answerSessionId) {
-            $sql = 'SELECT * FROM answer_sessions WHERE id = ?';
+            $sql = 'SELECT ast.*,
+                           (SELECT COUNT(1)
+                              FROM answer_sessions
+                             WHERE origin_id = ast.id) as descendants_count
+                      FROM answer_sessions ast
+                     WHERE ast.id = ?';
             $sessionsResult = Db::prepQuery($sql, 'i', [$answerSessionId]);
             $answerSessions = self::fetchSessions($sessionsResult);
 
@@ -229,6 +254,7 @@
                 $session->questionnaireId = $queryRow['questionnaire_id'];
                 $session->ipAddress = $queryRow['ip_address'];
                 $session->date = DateTimeUtils::fromDatabase($queryRow['date']);
+                $session->descendantsCount = $queryRow['descendants_count'];
 
                 $sessions[$session->id] = $session;
             }
@@ -416,6 +442,15 @@
         }
 
         public static function delete($id) {
+            $session = self::get($id);
+            if (empty($session)) {
+                return Tr::format('error.answerSession.notFound', [$id], 'AnswerSession with ID: {0} was not found');
+            }
+            if ($session->descendantsCount > 0) {
+                return Tr::format('error.answerSession.delete.hasDescendants', [$id, $session->descendantsCount],
+                    'AnswerSession with ID: {0} cannot be deleted, because {1} Astrologer(s) made their calculations on it');
+            }
+
             try {
                 Db::autocommit(FALSE);
                 Db::beginTransaction(0, 'DeleteAnswerSession');

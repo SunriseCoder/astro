@@ -13,7 +13,7 @@
     $body_content = '';
 
     // Saving Question Answers
-    $alreadyAnswered = AnswerSessionDao::hasAlreadyAnswered();
+    $alreadyAnswered = AnswerSessionDao::hasCurrentUserAlreadyAnswered();
     if ($alreadyAnswered) {
         $body_content .= Tr::trs('page.questions.error.alreadyAnswered', 'Sorry, but you already have taken part in the survey');
     } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {

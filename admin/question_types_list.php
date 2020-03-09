@@ -10,15 +10,15 @@
                    qt.code as code,
                    qt.name as name
               FROM question_types qt';
-    $result = Db::query($sql);
-    if (count($result) > 0) {
+    $error = Db::query($sql);
+    if (count($error) > 0) {
         $body_content .= '<table class="admin-table">';
         $body_content .= '<tr>
                 <th>ID</th>
                 <th>Code</th>
                 <th>Name</th>
               </tr>';
-        foreach ($result as $row) {
+        foreach ($error as $row) {
             $body_content .= '<tr>';
             $body_content .= '<td>'.$row['id'].'</td>';
             $body_content .= '<td>'.$row['code'].'</td>';
