@@ -19,46 +19,12 @@
             }
         }
     }
-?>
 
-<html>
-    <?
-        $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
-        $page_title = Tr::trs('page.login.pageTitle', 'Login');
+    $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
+    $page_title = Tr::trs('page.login.pageTitle', 'Login');
 
-        include $_SERVER["DOCUMENT_ROOT"].'/templates/metadata.php';
-    ?>
-    <body>
-        <table id="page-markup-table">
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_top.php'; ?>
-                </td>
-            </tr>
-            <tr>
-                <td class="menu">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/menu.php'; ?>
-                </td>
-                <td>
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/body_top.php'; ?>
+    if (isset($error)) {
+        $body_content = '<font color="red">'.$error.'</font><br /><br />';
+    }
 
-                    <? /* Body Area Start */ ?>
-
-                    <?php
-                        if (isset($error)) {
-                            echo '<font color="red">'.$error.'</font><br /><br />';
-                        }
-                    ?>
-
-                    <? /* Body Area End */ ?>
-
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <? include $_SERVER["DOCUMENT_ROOT"].'/templates/page_footer.php'; ?>
-                </td>
-            </tr>
-        </table>
-    </body>
-</html>
+    include $_SERVER["DOCUMENT_ROOT"].'/templates/page.php';
