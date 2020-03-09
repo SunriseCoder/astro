@@ -28,7 +28,7 @@
 
         $questionsMap = QuestionDao::getDefaultQuestionnaire();
         if (count($questionsMap) > 0) {
-            $body_content .= '<form action="questions.php" method="post">';
+            $body_content .= '<form action="" method="post">';
             $body_content .= '<table class="questions-table">';
             $body_content .= '<tr>';
             $body_content .= '<th class="table-top-left">'.Tr::trs('word.question.numberShort', '#').'</th>';
