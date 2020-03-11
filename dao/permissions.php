@@ -22,13 +22,6 @@ class Permission {
 
     // Translators
     const TranslationsView = 'TranslationsView';
-    const TranslationsEditEnglish = 'TranslationsEditEnglish';
-    const TranslationsEditRussian = 'TranslationsEditRussian';
-    const TranslationsEditItalian = 'TranslationsEditItalian';
-    const TranslationsEditSpanish = 'TranslationsEditSpanish';
-    const TranslationsEditTurkish = 'TranslationsEditTurkish';
-    const TranslationsEditGerman = 'TranslationsEditGerman';
-    const TranslationsEditFrench = 'TranslationsEditFrench';
 
     // Astrologers
     const AstrologerAnswering = 'AstrologerAnswering';
