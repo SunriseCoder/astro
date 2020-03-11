@@ -13,30 +13,30 @@
         } else {
             $body_content .= '<font color="green">'.Tr::trs('page.register.registerSuccessfully', 'Your password has been sent via E-Mail').'</font>';
         }
+    } else {
+        $body_content .= '<div class="centered-content">
+                            <form action="register.php" method="POST">
+                                <table>
+                                    <tr>
+                                        <td>'.Tr::trs('word.name', 'Name').':</td>
+                                        <td>
+                                            <input name="name" type="text" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>'.Tr::trs('word.email', 'E-Mail').':</td>
+                                        <td>
+                                            <input name="email" type="text" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" align="center">
+                                            <input type="submit" value="'.Tr::trs('word.register', 'Register').'" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>';
     }
-
-    $body_content .= '<div class="centered-content">
-                        <form action="register.php" method="POST">
-                            <table>
-                                <tr>
-                                    <td>'.Tr::trs('word.name', 'Name').':</td>
-                                    <td>
-                                        <input name="name" type="text" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>'.Tr::trs('word.email', 'E-Mail').':</td>
-                                    <td>
-                                        <input name="email" type="text" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="2" align="center">
-                                        <input type="submit" value="'.Tr::trs('word.register', 'Register').'" />
-                                    </td>
-                                </tr>
-                            </table>
-                        </form>
-                    </div>';
 
     include $_SERVER["DOCUMENT_ROOT"].'/templates/page.php';

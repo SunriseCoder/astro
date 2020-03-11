@@ -52,9 +52,9 @@
                         </tr>
                         <tr>
                             <td colspan="2" align="center">
-                                <a onclick="document.getElementById('popup-login-form').submit();"><?php echo Tr::trs('word.signIn', 'Sign In'); ?></a>
-                                <a href="register.php"><?php echo Tr::trs('word.signUp', 'Sign Up'); ?></a>
-                                <a onclick="hideLoginForm();"><?php echo Tr::trs('word.cancel', 'Cancel'); ?></a>
+                                <a class="button" onclick="document.getElementById('popup-login-form').submit();"><?php echo Tr::trs('word.signIn', 'Sign In'); ?></a>
+                                <a class="button" href="register.php"><?php echo Tr::trs('word.signUp', 'Sign Up'); ?></a>
+                                <a class="button" onclick="hideLoginForm();"><?php echo Tr::trs('word.cancel', 'Cancel'); ?></a>
                             </td>
                         </tr>
                     </table>
