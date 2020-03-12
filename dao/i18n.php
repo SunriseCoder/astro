@@ -68,6 +68,13 @@
         const QUESTION_PREFIX = 'entities.question.';
         const QUESTION_OPTION_PREFIX = 'entities.questionOption.';
 
+        public static function getCountAll() {
+            $sql = 'SELECT COUNT(1) as c FROM i18n_keywords';
+            $queryResult = Db::query($sql);
+            $result = $queryResult[0]['c'];
+            return $result;
+        }
+
         public static function getAll() {
             $sql = 'SELECT * FROM i18n_keywords ORDER BY id';
             $queryResult = Db::query($sql);
@@ -157,6 +164,16 @@
                 $translations[$translation->id] = $translation;
             }
             return $translations;
+        }
+
+        public static function getStatisticMapByLanguageIds() {
+            $sql = 'SELECT language_id, COUNT(1) as c FROM i18n_translations GROUP BY language_id ORDER BY language_id';
+            $queryResult = Db::query($sql);
+            $result = [];
+            foreach ($queryResult as $queryRow) {
+                $result[$queryRow['language_id']] = $queryRow['c'];
+            }
+            return $result;
         }
 
         public static function saveQuestion($question) {

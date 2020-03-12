@@ -49,6 +49,10 @@ body {
     border: solid #E6AB1A 2pt;
 }
 
+.admin-table caption {
+    font-weight: bold;
+}
+
 .admin-table th,
 .admin-table td {
     border: solid #E6AB1A 2pt;
