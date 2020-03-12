@@ -1,6 +1,6 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
-    LoginDao::checkPermissionsAndRedirect([Permission::QuestionsView], './');
+    LoginDao::checkPermissionsAndRedirect(Permission::QuestionsView, './');
 
     if (!class_exists('Question')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
 

@@ -333,7 +333,7 @@ class LoginDao {
     /**
      * Checking presense of ALL required permissions
      *
-     * @param array $permissions Array of Permissions to check
+     * @param array $permissions Array of Permissions or just a single Permission to check
      * @return TRUE if $currentUser has ALL required privileges, otherwise FALSE
      */
     public static function checkPermissions($permissions) {
@@ -345,20 +345,28 @@ class LoginDao {
             return FALSE;
         }
 
-        foreach ($permissions as $permission) {
-            $found = FALSE;
-            foreach (self::$currentUser->permissions as $userPermission) {
-                if ($userPermission->code == $permission) {
-                    $found = TRUE;
-                    break;
+        if (is_array($permissions)) {
+            foreach ($permissions as $permission) {
+                if (!self::hasPermission($permission)) {
+                    return FALSE;
                 }
             }
-            if (!$found) {
-                return FALSE;
-            }
+            return TRUE;
         }
 
-        return TRUE;
+        $result = self::hasPermission($permissions);
+        return $result;
+    }
+
+    private static function hasPermission($permission) {
+        $found = FALSE;
+        foreach (self::$currentUser->permissions as $userPermission) {
+            if ($userPermission->code == $permission) {
+                $found = TRUE;
+                break;
+            }
+        }
+        return $found;
     }
 
     /**

@@ -2,7 +2,7 @@
     // Used to add Test Users to Test server after copy data from Prod
 
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
-    LoginDao::checkPermissionsAndRedirect([Permission::TechnicalChange], './');
+    LoginDao::checkPermissionsAndRedirect(Permission::TechnicalChange, './');
 
     if (!class_exists('Db')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php'; }
 

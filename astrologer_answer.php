@@ -4,7 +4,7 @@
     if (!class_exists('QuestionDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
     if (!class_exists('QuestionRender')) { include $_SERVER["DOCUMENT_ROOT"].'/render/questions.php'; }
 
-    LoginDao::checkPermissionsAndRedirect([Permission::AstrologerAnswering], './');
+    LoginDao::checkPermissionsAndRedirect(Permission::AstrologerAnswering, './');
 
     if ($_SERVER['REQUEST_METHOD'] == 'GET' && (!isset($_GET['id']) || !preg_match('/^[0-9]+$/', $_GET['id']))) {
         Utils::redirect('/astrologer_choose.php');

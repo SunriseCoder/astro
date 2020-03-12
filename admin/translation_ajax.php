@@ -1,6 +1,6 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
-    if (!LoginDao::checkPermissions([Permission::TranslationsView])) {
+    if (!LoginDao::checkPermissions(Permission::TranslationsView)) {
         echo 'Error: You don\'t have permissions for this operation';
         exit;
     }
@@ -16,7 +16,7 @@
             if (isset($translation)) {
                 $languageId = $translation->languageId;
                 $language = LanguageDao::getById($languageId);
-                if (LoginDao::checkPermissions([Permission::TRANSLATIONS_EDIT_PREFIX.$language->nameEnglish])) {
+                if (LoginDao::checkPermissions(Permission::TRANSLATIONS_EDIT_PREFIX.$language->nameEnglish)) {
                     $translation->text = $_POST['text'];
                     TranslationDao::update($translation);
                 } else {
@@ -30,7 +30,7 @@
         } else if (Utils::areSet($_POST, ['keyword_id', 'language_id'])) {
             $languageId = $_POST['language_id'];
             $language = LanguageDao::getById($languageId);
-            if (LoginDao::checkPermissions([Permission::TRANSLATIONS_EDIT_PREFIX.$language->nameEnglish])) {
+            if (LoginDao::checkPermissions(Permission::TRANSLATIONS_EDIT_PREFIX.$language->nameEnglish)) {
                 if (isset($_POST['text']) && !empty($_POST['text'])) {
                     TranslationDao::saveByKeywordIdAndLanguageId($_POST['keyword_id'], $_POST['language_id'], $_POST['text']);
                 } else {

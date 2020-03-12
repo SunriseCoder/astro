@@ -1,6 +1,6 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
-    LoginDao::checkPermissionsAndRedirect([Permission::AnswerSessionsView], './');
+    LoginDao::checkPermissionsAndRedirect(Permission::AnswerSessionsView, './');
 
     if (!isset($_GET['session_id']) || !preg_match('/^[0-9]+$/', $_GET['session_id'])) {
         Utils::redirect('/admin/answer_sessions_list.php');

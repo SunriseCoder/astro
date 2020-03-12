@@ -1,6 +1,6 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
-    LoginDao::checkPermissionsAndRedirect([Permission::QuestionsView], './');
+    LoginDao::checkPermissionsAndRedirect(Permission::QuestionsView, './');
 
     $browser_title = 'Chaitanya Academy - Question Types';
     $page_title = 'Question Types - Administration';

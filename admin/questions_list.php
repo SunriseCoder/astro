@@ -1,6 +1,6 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
-    LoginDao::checkPermissionsAndRedirect([Permission::QuestionsView], './');
+    LoginDao::checkPermissionsAndRedirect(Permission::QuestionsView, './');
 
     if (!class_exists('Question')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
 
@@ -36,7 +36,7 @@
             $body_content .= '<td>'.$question->position.'</td>';
             $body_content .= '<td>'.$questionnaires[$question->questionnaireId]->name.'</td>';
             $body_content .= '<td>';
-            if (LoginDao::checkPermissions([Permission::QuestionsEdit])) {
+            if (LoginDao::checkPermissions(Permission::QuestionsEdit)) {
                 $body_content .= '<a href="question_edit.php?id='.$question->id.'">Edit</a>';
             }
             $body_content .= '</td>';

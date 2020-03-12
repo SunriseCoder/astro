@@ -1,6 +1,6 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
-    LoginDao::checkPermissionsAndRedirect([Permission::UsersView], './');
+    LoginDao::checkPermissionsAndRedirect(Permission::UsersView, './');
 
     $browser_title = 'Chaitanya Academy - Astrology';
     $page_title = 'Users View';

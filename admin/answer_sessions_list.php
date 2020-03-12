@@ -1,6 +1,6 @@
 <?php
     if (!class_exists('LoginDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/permissions.php'; }
-    LoginDao::checkPermissionsAndRedirect([Permission::AnswerSessionsView], './');
+    LoginDao::checkPermissionsAndRedirect(Permission::AnswerSessionsView, './');
 
     include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php';
 
@@ -10,7 +10,7 @@
 
     // Delete Answer Session
     if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
-        LoginDao::checkPermissionsAndRedirect([Permission::AnswerSessionsDelete], './');
+        LoginDao::checkPermissionsAndRedirect(Permission::AnswerSessionsDelete, './');
         $id = $_GET['id'];
         $error = AnswerSessionDao::delete($id);
         if ($error) {
@@ -70,7 +70,7 @@
             $body_content .= '<td>'.$row['descendants_count'].'</td>';
             $body_content .= '<td>';
             $body_content .= '<a href="answers_view.php?session_id='.$row['id'].'">View</a>';
-            if ($row['descendants_count'] == 0 && LoginDao::checkPermissions([Permission::AnswerSessionsDelete])) {
+            if ($row['descendants_count'] == 0 && LoginDao::checkPermissions(Permission::AnswerSessionsDelete)) {
                 $body_content .= ' <a href="answer_sessions_list.php?action=delete&id='.$row['id'].'">Delete</a>';
             }
             $body_content .= '</td>';
