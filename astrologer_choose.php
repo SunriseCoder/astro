@@ -78,7 +78,7 @@
                     if ($answerSession->userId == $currentUser->id) {
                         $body_content .= Tr::trs('word.astrologer.yourAnswers', 'Your answers');
                     } else if (isset($guessedSessionsMapping[$answerSession->id])) {
-                        $body_content .= Tr::trs('word.astrologer.alreadyGuessed', 'Already guessed');
+                        $body_content .= Tr::trs('word.astrologer.alreadyAnswered', 'Already answered');
                     } else {
                         $body_content .= '<a href="astrologer_answer.php?id='.$answerSession->id.'">'.Tr::trs('word.new', 'New').'</a>';
                     }

@@ -293,7 +293,7 @@
                 // Checking that the Astrologer didn't already solve this Answer Set
                 $alreadyAnswered = self::hasCurrentAstrologerAnsweredAlready($originId);
                 if ($alreadyAnswered) {
-                    return Tr::format('error.answerSession.astrologerAlreadyGuessed', [$originId], 'You have already solved Answer Session with ID: {0}');
+                    return Tr::format('error.answerSession.astrologerAlreadyAnswered', [$originId], 'You have already answered the Answer Session with ID: {0}');
                 }
             }
 

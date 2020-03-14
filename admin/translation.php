@@ -4,7 +4,7 @@
 
     $browser_title = 'Chaitanya Academy - Astrology';
     $page_title = 'Translation';
-    $js_includes = ['js/i18n.js'];
+    $js_includes = ['js/i18n.js', 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js', 'https://www.google.com/jsapi'];
 
     $body_content = '
                     <!-- Edit Form -->
@@ -24,7 +24,10 @@
                             </tr>
                             <tr>
                                 <td>Translation</td>
-                                <td><textarea id="translationCell" name="text" rows="10" cols="100"></textarea></td>
+                                <td>
+                                    <textarea id="translationCell" name="text" rows="10" cols="100"></textarea>
+                                    <div id="google-transliteration"></div>
+                                </td>
                             </tr>
                         </table>
                         <input id="editFormSubmit" type="button" value="Save" onclick="saveTranslation();" />
@@ -47,6 +50,8 @@
                     <div id="translationsRoot"></div>';
 
     $body_content .= '<script>';
+    $body_content .= 'google.setOnLoadCallback(onGoogleTransliterationLoad);';
+    $body_content .= 'google.load("elements", "1", {packages: "transliteration"});';
     $body_content .= 'refreshTranslationData();';
     $body_content .= '</script>';
 

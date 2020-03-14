@@ -257,10 +257,13 @@ function saveTranslation() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            clearEditForm();
             try {
+                // If we get Error Message instead of JSON Text, an Exception will be thrown
                 data = JSON.parse(this.responseText);
                 updateTranslationData(data);
+
+                // Clear EditForm after the confirmation about successful Save only
+                clearEditForm();
                 document.getElementById('saveTranslationStatus').innerHTML = '<font color="green">Saved</font>';
             } catch (e) {
                 document.getElementById('saveTranslationStatus').innerHTML = '<font color="red">' + this.responseText + '</font>';
@@ -307,6 +310,19 @@ function handleHotkey(e) {
     }
 }
 document.addEventListener('keydown', handleHotkey, false);
+
+function onGoogleTransliterationLoad() {
+    var options = {
+      sourceLanguage: 'en',
+      destinationLanguage: ['bn', 'hi', 'or', 'sa'],
+      shortcutKey: 'ctrl+m',
+      transliterationEnabled: true
+    }
+
+    var control = new google.elements.transliteration.TransliterationControl(options);
+    control.makeTransliteratable(["translationCell"]);
+    control.showControl('google-transliteration');
+}
 
 //TODO Move to Utils Library
 function createElementWithText(name, text, parent) {
