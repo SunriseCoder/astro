@@ -16,6 +16,11 @@
             $result = $dateTime->format("Y-m-d H:i:s");
             return $result;
         }
+
+        public static function diffInSeconds(DateTime $dateTime1, DateTime $dateTime2) {
+            $result = $dateTime2->format("U") - $dateTime1->format("U");
+            return $result;
+        }
     }
 
     class Utils {

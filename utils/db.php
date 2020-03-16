@@ -22,6 +22,8 @@ class Db {
             Logger::error('Connection failed, '.self::$conn->connect_error);
             die;
         }
+
+        self::doBackupIfNeeded();
     }
 
     public static function autocommit($mode) {
@@ -279,6 +281,38 @@ class Db {
         $file = fopen($_SERVER["DOCUMENT_ROOT"].'/logs/db_queries.log', 'a');
         fwrite($file, $message);
         fclose($file);
+    }
+
+    private static function doBackupIfNeeded() {
+        $sql = 'SELECT value FROM settings WHERE code = \'DB_BACKUP_LAST_TIME\'';
+        $queryResult = self::query($sql);
+        // If last backup time is not set, doing backup
+        if (count($queryResult) == 0 || empty($queryResult[0]['value'])) {
+            self::backup();
+        } else {
+            $lastBackup = DateTimeUtils::fromDatabase($queryResult[0]['value']);
+            $secondsSinceLastBackup = DateTimeUtils::diffInSeconds($lastBackup, DateTimeUtils::now());
+            // If passed more than backup time interval, doing backup
+            if ($secondsSinceLastBackup > Config::DB_BACKUP_INTERVAL) {
+                self::backup();
+            }
+        }
+    }
+
+    public static function backup(&$output = NULL, &$status = NULL) {
+        $file = $_SERVER["DOCUMENT_ROOT"].Config::DB_BACKUP_SAVE.'/'.Config::DB_NAME.'-'.DateTimeUtils::now()->format("Y-m-d__H-i-s").'.sql.gz';
+        $command = 'mysqldump -u '.Config::DB_USER.' --password='.Config::DB_PASS.' '.Config::DB_NAME.' | gzip > '.$file;
+        exec($command, $output, $status);
+        if ($status == 0) {
+            $sql = 'UPDATE settings SET value = ? WHERE code = \'DB_BACKUP_LAST_TIME\'';
+            self::prepStmt($sql, 's', [DateTimeUtils::toDatabase(DateTimeUtils::now())]);
+        }
+        return $status == 0;
+    }
+
+    public static function restore($file, &$output = NULL, &$status = NULL) {
+        $command = 'gzip -cd '.$file.' | mysql -u '.Config::DB_USER.' --password='.Config::DB_PASS.' '.Config::DB_NAME;
+        exec($command, $output, $status);
     }
 }
 ?>

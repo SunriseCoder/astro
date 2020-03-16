@@ -10,7 +10,9 @@ class Permission {
 
     // Technical stuff
     const TechnicalView = 'TechnicalView';
-    const TechnicalChange = 'TechnicalChange';
+    const TechnicalAdmin = 'TechnicalAdmin';
+    const DatabaseBackup = 'DatabaseBackup';
+    const DatabaseRestore = 'DatabaseRestore';
 
     // Administration
     const AdminMenuVisible = 'AdminMenuVisible';
@@ -132,6 +134,7 @@ class RoleDao {
 
 class User {
     public $id;
+    public $name;
     public $email;
     public $pass;
     public $roles = [];

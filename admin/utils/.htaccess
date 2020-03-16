@@ -1,0 +1,37 @@
+# Deny access to .htaccess
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Disable directory browsing
+Options -Indexes
+
+# Alternate default index pages
+DirectoryIndex index.php index.html index.htm
+
+# Hide the contents of directories
+#IndexIgnore *
+
+# Hide files of type .png, .zip, .jpg, .gif and .doc from listing
+#IndexIgnore *.png *.zip *.jpg *.gif *.doc
+
+# Deny access to files with extensions .ini, .psd, .log, .sh
+#<FilesMatch "\.(ini|psd|log|sh)$">
+#    Order allow,deny
+#    Deny from all
+#</FilesMatch>
+
+# Deny access to filenames starting with dot(.)
+#<FilesMatch "^\.">
+#    Order allow,deny
+#    Deny from all
+#</FilesMatch>
+
+# Password protect files
+#<FilesMatch "^(execute|index|myfile|anotherfile)*$">
+#    AuthType Basic
+#    AuthName "Mypassword"
+#    AuthUserFile <Full Server Path to .htpasswd file>/.htpasswd
+#    Require valid-user
+#</FilesMatch>

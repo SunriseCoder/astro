@@ -18,5 +18,8 @@
     if (LoginDao::checkPermissions(Permission::UsersView)) {
         echo '<tr><td><a href="users.php">'.Tr::trs('menu.admin.users', 'Users').'</a></td></tr>';
     }
+    if (LoginDao::checkPermissions(Permission::DatabaseBackup)) {
+        echo '<tr><td><a href="database_backups.php">'.Tr::trs('menu.admin.database', 'Databases').'</a></td></tr>';
+    }
     echo '</table>';
 ?>

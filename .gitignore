@@ -1,5 +1,6 @@
-/config.php 
-*/.htaccess
+# Database backups
+/backups/db/**/
+/backups/db/*.sql.gz
 
 # Environment configurations
 /config/env/

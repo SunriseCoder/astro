@@ -4,10 +4,20 @@
     error_reporting(E_ALL | E_STRICT);
 
     class Config {
+        const ENV = 'Dev'; // Developer's computer
+        //const ENV = 'Test'; // Test environment
+        //const ENV = 'Prod'; // Production (Live) working environment with real data
+
         const DB_HOST = 'localhost';
         const DB_USER = 'root';
         const DB_PASS = '';
         const DB_NAME = 'astro';
+
+        const DB_BACKUP_SAVE = '/backups/db';
+        // Here could be multiple paths, for example, to deploy backups from Prod to Test
+        // It could be performed from the Test, not from the Prod though
+        const DB_BACKUP_LOAD = ['Dev' => '/backups/db'];
+        const DB_BACKUP_INTERVAL = 1800; // In seconds
     }
 
     class Logger {

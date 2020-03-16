@@ -316,7 +316,7 @@ function onGoogleTransliterationLoad() {
       sourceLanguage: 'en',
       destinationLanguage: ['bn', 'hi', 'or', 'sa'],
       shortcutKey: 'ctrl+m',
-      transliterationEnabled: true
+      transliterationEnabled: false
     }
 
     var control = new google.elements.transliteration.TransliterationControl(options);
