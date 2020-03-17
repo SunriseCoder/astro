@@ -26,9 +26,13 @@
             Db::backup(); // Just in case
             Db::restore($file, $output, $status);
             if ($status == 0) {
+                $testUsersFile = $_SERVER["DOCUMENT_ROOT"].'/config/add_test_users.php';
+                if (file_exists($testUsersFile)) {
+                    include $testUsersFile;
+                }
                 $body_content .= '<font color="green">Database restored successfully</font><br />';
             } else {
-                $body_content .= '<font color="red">An Error occured during the Restore Database: '.$status.'</font><br />';
+                $body_content .= '<font color="red">An Error occured during the Restore Database ('.$file.'): '.$status.'</font><br />';
             }
 
             $body_content .= 'Command execution log:<br />';
@@ -42,17 +46,18 @@
                         <input type="submit" value="Create Backup" />
                     </form>';
 
-    // Restore Backup
+    // Backup File Tables
     foreach (Config::DB_BACKUP_LOAD as $env => $path) {
         // Scan folder
         $files = glob($_SERVER["DOCUMENT_ROOT"].$path.'/*.sql.gz');
         if ($files) {
             $tableModel = new TableModel();
             $tableModel->title = $env;
-            $tableModel->header = ['File', 'Actions'];
+            $tableModel->header = ['File', 'Size', 'Actions'];
             foreach ($files as $file) {
-                $actions = '<a href="?action=restore&file='.$file.'">Restore</a>';
-                $tableModel->data []= [$file, $actions];
+                $size = NumberUtils::humanReadableSize(filesize($file)).'b';
+                $actions = '<a href="?action=restore&file='.$file.'" onclick="return confirm(\'Are you sure to restore '.$file.'?\');">Restore</a>';
+                $tableModel->data []= [$file, $size, $actions];
             }
             $body_content .= HTMLRender::renderTable($tableModel, 'admin-table');
         }

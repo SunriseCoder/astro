@@ -84,4 +84,22 @@
             return $result;
         }
     }
+
+    class NumberUtils {
+        public static function humanReadableSize($size) {
+            $power = 0;
+            $unit = 1024;
+            $prefixes = 'kMGT';
+            while ($size > $unit && $power <= strlen($prefixes)) {
+                $size = $size / $unit;
+                $power++;
+            }
+
+            $size = $size >= 10 ? round($size, 0) : round($size, 1);
+            if ($power > 0) {
+                $size .= substr($prefixes, $power - 1, 1);
+            }
+            return $size;
+        }
+    }
 ?>

@@ -21,5 +21,8 @@
     if (LoginDao::checkPermissions(Permission::DatabaseBackup)) {
         echo '<tr><td><a href="database_backups.php">'.Tr::trs('menu.admin.database', 'Databases').'</a></td></tr>';
     }
+    if (LoginDao::checkPermissions(Permission::TechnicalView)) {
+        echo '<tr><td><a href="server_info.php">'.Tr::trs('menu.admin.serverInfo', 'Server Info').'</a></td></tr>';
+    }
     echo '</table>';
 ?>

@@ -17,7 +17,7 @@
         // Here could be multiple paths, for example, to deploy backups from Prod to Test
         // It could be performed from the Test, not from the Prod though
         const DB_BACKUP_LOAD = ['Dev' => '/backups/db'];
-        const DB_BACKUP_INTERVAL = 1800; // In seconds
+        const DB_BACKUP_INTERVAL = 18000000; // In seconds
     }
 
     class Logger {
