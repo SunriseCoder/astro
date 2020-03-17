@@ -19,6 +19,8 @@
         public $keywordId;
         public $languageId;
         public $text;
+        public $lastChangedTime;
+        public $lastChangedBy;
     }
 
     class LanguageDao {
@@ -167,13 +169,26 @@
         }
 
         public static function getStatisticMapByLanguageIds() {
-            $sql = 'SELECT language_id, COUNT(1) as c FROM i18n_translations GROUP BY language_id ORDER BY language_id';
+            $sql = 'SELECT l.id as language_id,
+                           l.name_english as language_name,
+                           COALESCE(1d.c, 0) as 1day_count,
+                           COALESCE(3d.c, 0) as 3days_count,
+                           COALESCE(7d.c, 0) as 7days_count,
+                           COALESCE(30d.c, 0) as 30days_count,
+                           COALESCE(t.c, 0) as total_count
+                      FROM i18n_languages l
+                 LEFT JOIN (SELECT language_id, COUNT(1) as c FROM i18n_translations
+                             WHERE last_changed_time > now() - INTERVAL 1 day GROUP BY language_id) 1d on 1d.language_id = l.id
+                 LEFT JOIN (SELECT language_id, COUNT(1) as c FROM i18n_translations
+                             WHERE last_changed_time > now() - INTERVAL 3 day GROUP BY language_id) 3d on 3d.language_id = l.id
+                 LEFT JOIN (SELECT language_id, COUNT(1) as c FROM i18n_translations
+                             WHERE last_changed_time > now() - INTERVAL 7 day GROUP BY language_id) 7d on 7d.language_id = l.id
+                 LEFT JOIN (SELECT language_id, COUNT(1) as c FROM i18n_translations
+                             WHERE last_changed_time > now() - INTERVAL 30 day GROUP BY language_id) 30d on 30d.language_id = l.id
+                 LEFT JOIN (SELECT language_id, COUNT(1) as c FROM i18n_translations GROUP BY language_id) t on t.language_id = l.id
+                  ORDER BY l.id';
             $queryResult = Db::query($sql);
-            $result = [];
-            foreach ($queryResult as $queryRow) {
-                $result[$queryRow['language_id']] = $queryRow['c'];
-            }
-            return $result;
+            return $queryResult;
         }
 
         public static function saveQuestion($question) {
@@ -214,15 +229,19 @@
 
         public static function insert($translation) {
             $translation->text = trim($translation->text);
-            $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text) VALUES (?, ?, ?)';
-            $result = Db::prepStmt($sql, 'iis', [$translation->keywordId, $translation->languageId, $translation->text]);
+            $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text, last_changed_time, last_changed_by_id) VALUES (?, ?, ?, ?, ?)';
+            $changeTime = DateTimeUtils::toDatabase(DateTimeUtils::now());
+            $userId = LoginDao::getCurrentUser()->id;
+            $result = Db::prepStmt($sql, 'iissi', [$translation->keywordId, $translation->languageId, $translation->text, $changeTime, $userId]);
             return $result;
         }
 
         public static function update($translation) {
             $translation->text = trim($translation->text);
-            $sql = 'UPDATE i18n_translations SET text = ? WHERE id = ?';
-            $result = Db::prepStmt($sql, 'si', [$translation->text, $translation->id]);
+            $sql = 'UPDATE i18n_translations SET text = ?, last_changed_time = ?, last_changed_by_id = ? WHERE id = ?';
+            $changeTime = DateTimeUtils::toDatabase(DateTimeUtils::now());
+            $userId = LoginDao::getCurrentUser()->id;
+            $result = Db::prepStmt($sql, 'ssii', [$translation->text, $changeTime, $userId, $translation->id]);
             return $result;
         }
 

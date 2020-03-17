@@ -241,7 +241,10 @@ function clearEditForm() {
 }
 
 function saveTranslation() {
+    // Locking "Save" Button and Clearing Status Label
     document.getElementById('editFormSubmit').disabled = true;
+    document.getElementById('saveTranslationStatus').innerHTML = '';
+
     var form = document.getElementById('translationForm');
     var query = '';
     for (var i = 0; i < form.elements.length; i++) {
@@ -263,10 +266,11 @@ function saveTranslation() {
                 updateTranslationData(data);
 
                 // Clear EditForm after the confirmation about successful Save only
-                clearEditForm();
                 document.getElementById('saveTranslationStatus').innerHTML = '<font color="green">Saved</font>';
+                clearEditForm();
             } catch (e) {
                 document.getElementById('saveTranslationStatus').innerHTML = '<font color="red">' + this.responseText + '</font>';
+                document.getElementById('editFormSubmit').disabled = false;
             }
         }
     };

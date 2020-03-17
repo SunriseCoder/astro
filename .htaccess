@@ -35,3 +35,8 @@ DirectoryIndex index.php index.html index.htm
 #    AuthUserFile <Full Server Path to .htpasswd file>/.htpasswd
 #    Require valid-user
 #</FilesMatch>
+
+# Resources Cache-Control
+<FilesMatch ".(css|jpg|jpeg|png|gif|js|ico)$">
+    Header set Cache-Control "max-age=300, public"
+</FilesMatch>

@@ -11,16 +11,20 @@
     // Translation Statistic Table
     if (LoginDao::checkPermissions(Permission::TranslationsView)) {
         $keywordsCount = KeywordDao::getCountAll();
-        $languages = LanguageDao::getAll();
         $statistics = TranslationDao::getStatisticMapByLanguageIds();
 
         $tableModel = new TableModel();
         $tableModel->title = 'Translation Statistic';
-        $tableModel->header = ['Language', 'Amount', 'Percentage'];
+        $tableModel->header = ['Language', '24 Hours', '3 Days', '7 Days', '30 Days', 'Total'];
 
-        foreach ($languages as $language) {
-            $amount = isset($statistics[$language->id]) ? $statistics[$language->id] : 0;
-            $tableModel->data []= [$language->nameEnglish, $amount.'/'.$keywordsCount, round(100 * $amount / $keywordsCount).'%'];
+        function mkCellData($amount, $total) {
+            $value = $amount.'/'.$total.' ('.round(100 * $amount / $total).'%)';
+            return $value;
+        }
+        foreach ($statistics as $row) {
+
+            $tableModel->data []= [$row['language_name'], mkCellData($row['1day_count'], $keywordsCount), mkCellData($row['3days_count'], $keywordsCount),
+                mkCellData($row['7days_count'], $keywordsCount), mkCellData($row['30days_count'], $keywordsCount), mkCellData($row['total_count'], $keywordsCount)];
         }
 
         $body_content .= HTMLRender::renderTable($tableModel, 'admin-table');
