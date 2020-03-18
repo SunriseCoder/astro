@@ -131,6 +131,13 @@
     }
 
     class TranslationDao {
+        private static function getDefaultTranslationUserId() {
+            $sql = 'SELECT value FROM settings WHERE code = \'DEFAULT_TRANSLATION_USER_ID\'';
+            $queryResult = Db::query($sql);
+            $result = count($queryResult) > 0 ? $queryResult[0]['value'] : NULL;
+            return $result;
+        }
+
         public static function getAll() {
             $sql = 'SELECT * FROM i18n_translations ORDER BY id';
             $queryResult = Db::query($sql);
@@ -231,7 +238,7 @@
             $translation->text = trim($translation->text);
             $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text, last_changed_time, last_changed_by_id) VALUES (?, ?, ?, ?, ?)';
             $changeTime = DateTimeUtils::toDatabase(DateTimeUtils::now());
-            $userId = LoginDao::getCurrentUser()->id;
+            $userId = LoginDao::isLogged() ? LoginDao::getCurrentUser()->id : self::getDefaultTranslationUserId();
             $result = Db::prepStmt($sql, 'iissi', [$translation->keywordId, $translation->languageId, $translation->text, $changeTime, $userId]);
             return $result;
         }
@@ -240,7 +247,7 @@
             $translation->text = trim($translation->text);
             $sql = 'UPDATE i18n_translations SET text = ?, last_changed_time = ?, last_changed_by_id = ? WHERE id = ?';
             $changeTime = DateTimeUtils::toDatabase(DateTimeUtils::now());
-            $userId = LoginDao::getCurrentUser()->id;
+            $userId = LoginDao::isLogged() ? LoginDao::getCurrentUser()->id : self::getDefaultTranslationUserId();
             $result = Db::prepStmt($sql, 'ssii', [$translation->text, $changeTime, $userId, $translation->id]);
             return $result;
         }

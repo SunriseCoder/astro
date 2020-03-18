@@ -399,6 +399,7 @@ class LoginDao {
 
         // Check Session expired
         if ($session && $session->isExpired()) {
+            self::logAutologin('Deleting session from database due to expiration', $session);
             LoginDao::deleteSession($session->id);
             return NULL;
         }
@@ -406,19 +407,36 @@ class LoginDao {
         // Check User exists and active
         $user = UserDao::getUserById($session->user_id);
         if (!$user || !$user->active) {
+            self::logAutologin('Deleting session from database due to inactive user', $session, $user);
             LoginDao::deleteSession($session->id);
             return NULL;
         }
 
-        $currentUserIP = self::clientIP();
+        // Disabled due to some Internet Provides (like 4G-networks) have a Pool of IP-Addresses
+        // Same Client has different IP-Address after just few seconds, the Pool could be huge
+        //$currentUserIP = self::clientIP();
         // If IP changed (Cookie probably stolen), deleting session
-        if ($session->user_ip != $currentUserIP) {
-            LoginDao::deleteSession($session->id);
-            return NULL;
-        }
+        //if ($session->user_ip != $currentUserIP) {
+        //    self::logAutologin('Deleting session from database due to different IP-Address', $session, $user, $currentUserIP);
+        //    LoginDao::deleteSession($session->id);
+        //    return NULL;
+        //}
 
         self::$currentUser = $user;
         return $user;
+    }
+
+    private static function logAutologin($message, $session, $user = NULL, $ip = NULL) {
+        // Generating log message
+        $message = DateTimeUtils::toDatabase(DateTimeUtils::now()).' - '.$message;
+        $message .= ', Session: '.Json::encode($session);
+        $message .= ', User: '.Json::encode($user);
+        $message .= ', IP: '.$ip;
+
+        // Writing message to the file
+        $file = fopen($_SERVER["DOCUMENT_ROOT"].'/logs/autologin.log', 'a');
+        fwrite($file, $message."\n");
+        fclose($file);
     }
 
     /**

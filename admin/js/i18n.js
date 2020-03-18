@@ -266,8 +266,8 @@ function saveTranslation() {
                 updateTranslationData(data);
 
                 // Clear EditForm after the confirmation about successful Save only
-                document.getElementById('saveTranslationStatus').innerHTML = '<font color="green">Saved</font>';
                 clearEditForm();
+                document.getElementById('saveTranslationStatus').innerHTML = '<font color="green">Saved</font>';
             } catch (e) {
                 document.getElementById('saveTranslationStatus').innerHTML = '<font color="red">' + this.responseText + '</font>';
                 document.getElementById('editFormSubmit').disabled = false;
