@@ -15,19 +15,29 @@
 
         $tableModel = new TableModel();
         $tableModel->title = 'Translation Statistic';
-        $tableModel->header = ['Language', '24 Hours', '3 Days', '7 Days', '30 Days', 'Total'];
 
+        // Table Header
+        $tableModel->header = [['Language', '24 Hours', '3 Days', '7 Days', '30 Days', 'Outdated', 'Total']];
+
+        // Table Content
         function mkCellData($amount, $total) {
             $value = $amount.'/'.$total.' ('.round(100 * $amount / $total).'%)';
             return $value;
         }
         foreach ($statistics as $row) {
-
-            $tableModel->data []= [$row['language_name'], mkCellData($row['1day_count'], $keywordsCount), mkCellData($row['3days_count'], $keywordsCount),
-                mkCellData($row['7days_count'], $keywordsCount), mkCellData($row['30days_count'], $keywordsCount), mkCellData($row['total_count'], $keywordsCount)];
+            $tableModel->data []= [
+                $row['language_name'],
+                mkCellData($row['1day_count'], $keywordsCount),
+                mkCellData($row['3days_count'], $keywordsCount),
+                mkCellData($row['7days_count'], $keywordsCount),
+                mkCellData($row['30days_count'], $keywordsCount),
+                mkCellData($row['outdated_count'], $keywordsCount),
+                mkCellData($row['total_count'], $keywordsCount)
+            ];
         }
 
         $body_content .= HTMLRender::renderTable($tableModel, 'admin-table');
     }
 
     include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';
+?>

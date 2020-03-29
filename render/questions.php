@@ -10,7 +10,7 @@
          *
          * @param array of Question $questions
          * @param Question $question
-         * @param Answer $answer
+         * @param ParticipantAnswer|AstrologerAnswer $answer
          */
         public static function renderAnswer($questions, $answer) {
             if (!isset($answer)) {
@@ -62,6 +62,7 @@
             }
 
             $questionObject = Json::decode($question->markup);
+            // TODO Rewrite with HTMLRender::renderTable(...) if possible
             $content = '<table class="questions-table">';
             // Table Header using Question Text
             $subQuestions = array_values($questionObject->subQuestions);
@@ -70,11 +71,11 @@
                 if ($i == 0 && count($subQuestions) == 1) {
                     $content .= '<th class="table-top-single">';
                 } else if ($i == 0 && count($subQuestions) > 1) {
-                    $content .= '<th class="table-top-left">';
+                    $content .= '<th class="table-top-first">';
                 } else if ($i < count($subQuestions) - 1) {
                     $content .= '<th class="table-top-middle">';
                 } else {
-                    $content .= '<th class="table-top-right">';
+                    $content .= '<th class="table-top-last">';
                 }
                 $content .= $subQuestion->text.'</th>';
             }
@@ -102,17 +103,17 @@
                     $subQuestion = $subQuestions[$j];
                     if ($i < (count($entries)) - 1) {
                         // Not last row
-                        $content .= '<td class="'.($j == 0 ? 'table-middle-left' : 'table-middle-middle').'">';
+                        $content .= '<td class="'.($j == 0 ? 'table-middle-first' : 'table-middle-middle').'">';
                     } else {
                         // Last row
                         if ($j == 0 && count($subQuestions) == 1) {
                             $content .= '<td class="table-bottom-single">';
                         } else if ($j == 0) {
-                            $content .= '<td class="table-bottom-left">';
+                            $content .= '<td class="table-bottom-first">';
                         } else if ($j < count($subQuestions) - 1) {
                             $content .= '<td class="table-bottom-middle">';
                         } else {
-                            $content .= '<td class="table-bottom-right">';
+                            $content .= '<td class="table-bottom-last">';
                         }
                     }
                     if (isset($answers[$subQuestion->name])) {

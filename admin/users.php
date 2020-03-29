@@ -7,6 +7,7 @@
     $body_content = '';
 
     // Users Table
+    // TODO Rewrite all tables using HTMLRender::renderTable(...)
     $body_content .= '<h3>Users</h3>';
     $users = UserDao::getAll();
     if (count($users) > 0) {
@@ -103,3 +104,4 @@
     $body_content .= '</td></tr></table>';
 
     include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';
+?>

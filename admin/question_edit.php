@@ -33,6 +33,7 @@
     } else {
         $body_content .= '<form action="" method="post">';
 
+        // TODO Rewrite using HTMLRender::renderTable(...)
         $body_content .= '<div>Question:</div>';
         $body_content .= '<table class="admin-table">';
         $body_content .= '<tr>
@@ -94,6 +95,8 @@
         $body_content .= '</select></td></tr>';
         $body_content .= '</table><br />';
 
+        // TODO Embed next table into the previous table
+        // TODO Use "Answer options" for the first column and the whole second table as the value for the second column
         $body_content .= '<div>Answer options:</div>';
         $body_content .= '<table id="question_options_table" class="admin-table">';
         $body_content .= '<tr>
@@ -143,3 +146,4 @@
     }
 
     include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';
+?>

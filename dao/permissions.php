@@ -16,8 +16,9 @@ class Permission {
 
     // Administration
     const AdminMenuVisible = 'AdminMenuVisible';
-    const AnswerSessionsView = 'AnswerSessionsView';
-    const AnswerSessionsDelete = 'AnswerSessionsDelete';
+    const AnswersView = 'AnswersView';
+    const ParticipantAnswersDelete = 'ParticipantAnswersDelete';
+    const AstrologerAnswersDelete = 'AstrologerAnswersDelete';
     const QuestionsView = 'QuestionsView';
     const QuestionsEdit = 'QuestionsEdit';
     const UsersView = 'UsersView';
@@ -318,6 +319,7 @@ class LoginDao {
     const COOKIE_NAME = 'loginSession';
 
     private static $currentUser;
+    private static $autologinDone = FALSE;
 
     /**
      * Checking presense of ALL required permissions
@@ -340,9 +342,7 @@ class LoginDao {
      * @return TRUE if $currentUser has ALL required privileges, otherwise FALSE
      */
     public static function checkPermissions($permissions) {
-        if (!self::$currentUser) {
-            self::autologin();
-        }
+        self::autologin();
 
         if (!self::$currentUser) {
             return FALSE;
@@ -385,6 +385,11 @@ class LoginDao {
      * @return NULL|User
      */
     public static function autologin() {
+        if (self::$autologinDone) {
+            return self::$currentUser;
+        }
+        self::$autologinDone = TRUE;
+
         if (!isset($_COOKIE[self::COOKIE_NAME])) {
             return NULL;
         }
@@ -487,6 +492,7 @@ class LoginDao {
     }
 
     public static function getCurrentUser() {
+        self::autologin();
         return self::$currentUser;
     }
 
@@ -541,6 +547,7 @@ class LoginDao {
     }
 
     public static function isLogged() {
+        self::autologin();
         $logged = self::$currentUser != NULL;
         return $logged;
     }

@@ -7,9 +7,9 @@
     $body_content = '';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $error = UserDao::register($_POST['name'], $_POST['email']);
-        if ($error) {
-            $body_content .= '<font color="red">'.$error.'</font>';
+        $result = UserDao::register($_POST['name'], $_POST['email']);
+        if ($result) {
+            $body_content .= '<font color="red">'.$result.'</font>';
         } else {
             $body_content .= '<font color="green">'.Tr::trs('page.register.registerSuccessfully', 'Your password has been sent via E-Mail').'</font>';
         }

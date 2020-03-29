@@ -12,8 +12,8 @@
         if (isset($_POST['email']) && isset($_POST['password'])) {
             $email = $_POST['email'];
             $pass = $_POST['password'];
-            $error = LoginDao::login($email, $pass);
-            if (!$error) {
+            $result = LoginDao::login($email, $pass);
+            if (!$result) {
                 header("Location: /", true);
                 exit;
             }
@@ -24,8 +24,8 @@
     $page_title = Tr::trs('page.login.pageTitle', 'Login');
     $body_content = '';
 
-    if (isset($error)) {
-        $body_content = '<font color="red">'.$error.'</font><br /><br />';
+    if (isset($result)) {
+        $body_content = '<font color="red">'.$result.'</font><br /><br />';
     }
 
     $body_content .= '<div class="centered-content">

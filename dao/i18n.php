@@ -1,6 +1,7 @@
 <?php
     if (!class_exists('Db')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/db.php'; }
     if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
+    if (!class_exists('Settings')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/settings.php'; }
 
     class Language {
         public $id;
@@ -40,7 +41,8 @@
         }
 
         public static function getDefault() {
-            $sql = 'SELECT * FROM i18n_languages WHERE code = (SELECT value FROM settings WHERE code = \'DEFAULT_LANGUAGE_CODE\')';
+            $sql = 'SELECT * FROM i18n_languages WHERE code = (SELECT value FROM settings'
+                .' WHERE code = \''.Settings::DEFAULT_LANGUAGE_CODE.'\')';
             $queryResult = Db::query($sql);
             $languages = self::fetchAll($queryResult);
             if (count($languages) > 0) {
@@ -48,7 +50,7 @@
                 return $result;
             }
 
-            throw new Exception('Error: Default Language not found, look database tables "languages" and "settings", parameter "DEFAULT_LANGUAGE_CODE"');
+            throw new Exception('Error: Default Language not found, check database tables "i18n_languages" and "settings", parameter "'.Settings::DEFAULT_LANGUAGE_CODE.'"');
         }
 
         public static function fetchAll($queryResult) {
@@ -131,22 +133,23 @@
     }
 
     class TranslationDao {
-        private static function getDefaultTranslationUserId() {
-            $sql = 'SELECT value FROM settings WHERE code = \'DEFAULT_TRANSLATION_USER_ID\'';
-            $queryResult = Db::query($sql);
-            $result = count($queryResult) > 0 ? $queryResult[0]['value'] : NULL;
-            return $result;
-        }
-
         public static function getAll() {
-            $sql = 'SELECT * FROM i18n_translations ORDER BY id';
+            $sql = 'SELECT t.*,
+                           concat(u.id, \': \', u.name, \'<\', u.email, \'>\') as last_changed_by
+                      FROM i18n_translations t
+                 LEFT JOIN users u on u.id = t.last_changed_by_id
+                  ORDER BY id';
             $queryResult = Db::query($sql);
             $translations = self::fetchAll($queryResult);
             return $translations;
         }
 
         public static function getById($id) {
-            $sql = 'SELECT * FROM i18n_translations WHERE id = ?';
+            $sql = 'SELECT t.*,
+                           concat(u.id, \': \', u.name, \'<\', u.email, \'>\') as last_changed_by
+                      FROM i18n_translations t
+                 LEFT JOIN users u on u.id = t.last_changed_by_id
+                     WHERE t.id = ?';
             $queryResult = Db::prepQuery($sql, 'i', [$id]);
             $translations = self::fetchAll($queryResult);
             $result = count($translations) > 0 ? array_values($translations)[0] : NULL;
@@ -154,7 +157,13 @@
         }
 
         public static function getByKeywordIdAndLanguageId($keywordId, $languageId) {
-            $sql = 'SELECT * FROM i18n_translations WHERE keyword_id = ? AND language_id = ? ORDER BY id';
+            $sql = 'SELECT t.*,
+                           concat(u.id, \': \', u.name, \'<\', u.email, \'>\') as last_changed_by
+                      FROM i18n_translations t
+                 LEFT JOIN users u on u.id = t.last_changed_by_id
+                     WHERE keyword_id = ?
+                       AND language_id = ?
+                  ORDER BY id';
             $queryResult = Db::prepQuery($sql, 'ii', [$keywordId, $languageId]);
             $translations = self::fetchAll($queryResult);
             $result = count($translations) > 0 ? array_values($translations)[0] : NULL;
@@ -169,6 +178,8 @@
                 $translation->keywordId = $queryRow['keyword_id'];
                 $translation->languageId = $queryRow['language_id'];
                 $translation->text = $queryRow['text'];
+                $translation->lastChangedTime = DateTimeUtils::fromDatabase($queryRow['last_changed_time']);
+                $translation->lastChangedBy = $queryRow['last_changed_by'];
 
                 $translations[$translation->id] = $translation;
             }
@@ -182,6 +193,7 @@
                            COALESCE(3d.c, 0) as 3days_count,
                            COALESCE(7d.c, 0) as 7days_count,
                            COALESCE(30d.c, 0) as 30days_count,
+                           COALESCE(o.c, 0) as outdated_count,
                            COALESCE(t.c, 0) as total_count
                       FROM i18n_languages l
                  LEFT JOIN (SELECT language_id, COUNT(1) as c FROM i18n_translations
@@ -192,6 +204,15 @@
                              WHERE last_changed_time > now() - INTERVAL 7 day GROUP BY language_id) 7d on 7d.language_id = l.id
                  LEFT JOIN (SELECT language_id, COUNT(1) as c FROM i18n_translations
                              WHERE last_changed_time > now() - INTERVAL 30 day GROUP BY language_id) 30d on 30d.language_id = l.id
+                 LEFT JOIN (SELECT t.language_id, COUNT(1) as c
+                              FROM i18n_translations t
+                         LEFT JOIN i18n_translations d on d.keyword_id = t.keyword_id
+                                                      AND d.language_id = (SELECT id
+                                                                             FROM i18n_languages
+                                                                            WHERE code = (SELECT value
+                                                                                            FROM settings
+                                                                                           WHERE code = \'DEFAULT_LANGUAGE_CODE\'))
+                             WHERE t.last_changed_time < d.last_changed_time GROUP BY language_id) o on o.language_id = l.id
                  LEFT JOIN (SELECT language_id, COUNT(1) as c FROM i18n_translations GROUP BY language_id) t on t.language_id = l.id
                   ORDER BY l.id';
             $queryResult = Db::query($sql);
@@ -229,26 +250,49 @@
                 $translation->keywordId = $keywordId;
                 $translation->languageId = $languageId;
                 $translation->text = $text;
-                self::insert($translation);
+                $user = LoginDao::getCurrentUser();
+                self::insertAsUser($translation, $user);
             }
             Tr::updateTranslation($translation);
         }
 
-        public static function insert($translation) {
+        /**
+         * Inserting new Translation, created by Translation Editor
+         *
+         * @param Translation $translation
+         * @param User $user
+         * @return array|boolean
+         */
+        public static function insertAsUser($translation, $user) {
             $translation->text = trim($translation->text);
             $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text, last_changed_time, last_changed_by_id) VALUES (?, ?, ?, ?, ?)';
             $changeTime = DateTimeUtils::toDatabase(DateTimeUtils::now());
-            $userId = LoginDao::isLogged() ? LoginDao::getCurrentUser()->id : self::getDefaultTranslationUserId();
-            $result = Db::prepStmt($sql, 'iissi', [$translation->keywordId, $translation->languageId, $translation->text, $changeTime, $userId]);
+            $result = Db::prepStmt($sql, 'iissi', [$translation->keywordId, $translation->languageId, $translation->text, $changeTime, $user->id]);
             return $result;
         }
 
-        public static function update($translation) {
+        /**
+         * Inserting new Translation automatically - default value from from Tr::trs or Tr::format
+         * Inserting as Default User, because this operation is triggered not by the person, but automatically by the system itself
+         *
+         * @param Translation $translation
+         * @return array|boolean
+         */
+        public static function insertAsDefaultUser($translation) {
+            $translation->text = trim($translation->text);
+            $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text, last_changed_time, last_changed_by_id)'
+                .' VALUES (?, ?, ?, ?, SELECT value FROM settings WHERE code = \''.Settings::DEFAULT_TRANSLATION_USER_ID.'\')';
+            $changeTime = DateTimeUtils::toDatabase(DateTimeUtils::now());
+            $result = Db::prepStmt($sql, 'iiss', [$translation->keywordId, $translation->languageId, $translation->text, $changeTime]);
+            return $result;
+        }
+
+        public static function update($translation, $user = NULL) {
             $translation->text = trim($translation->text);
             $sql = 'UPDATE i18n_translations SET text = ?, last_changed_time = ?, last_changed_by_id = ? WHERE id = ?';
             $changeTime = DateTimeUtils::toDatabase(DateTimeUtils::now());
-            $userId = LoginDao::isLogged() ? LoginDao::getCurrentUser()->id : self::getDefaultTranslationUserId();
-            $result = Db::prepStmt($sql, 'ssii', [$translation->text, $changeTime, $userId, $translation->id]);
+            $user = LoginDao::getCurrentUser();
+            $result = Db::prepStmt($sql, 'ssii', [$translation->text, $changeTime, $user->id, $translation->id]);
             return $result;
         }
 

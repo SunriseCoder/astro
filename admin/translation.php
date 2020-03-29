@@ -36,10 +36,11 @@
                     </form>
 
                     <!-- Table Filters -->
-                    <input type="button" value="Refresh" onclick="refreshTranslationData();" />
                     Filter: <input id="textFilter" type="text" size="20" oninput="renderTranslationTable();" />
-                    <input id="emptyCellsOnlyFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Cells Only
-                    <input id="emptyRowsOnlyFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Rows Only
+                    <input id="emptyCellsFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Cells
+                    <input id="emptyRowsFilter" type="checkbox" onclick="renderTranslationTable();" />Empty Rows
+                    <input id="outdatedCellsFilter" type="checkbox" onclick="renderTranslationTable();" />Outdated Cells<br />
+                    <input type="button" value="Refresh" onclick="refreshTranslationData();" />
                     <input id="copyDefaultLanguageValueIfEmpty" type="checkbox" />Copy Default Language Value if empty<br />
                     <div id="languageFilter">
                         <input type="button" value="All" onclick="selectAllLanguageFilters(true);" />
@@ -50,9 +51,10 @@
                     <div id="translationsRoot"></div>';
 
     $body_content .= '<script>';
-    $body_content .= 'google.setOnLoadCallback(onGoogleTransliterationLoad);';
-    $body_content .= 'google.load("elements", "1", {packages: "transliteration"});';
     $body_content .= 'refreshTranslationData();';
+    $body_content .= 'google.load("elements", "1", {packages: "transliteration"});';
+    $body_content .= 'google.setOnLoadCallback(onGoogleTransliterationLoad);';
     $body_content .= '</script>';
 
     include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';
+?>

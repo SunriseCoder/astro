@@ -115,7 +115,7 @@
                     $translation->languageId = $language->id;
                     $translation->text = $default;
 
-                    TranslationDao::insert($translation);
+                    TranslationDao::insertAsDefaultUser($translation);
 
                     $translationId = Db::insertedId();
                     $translation = TranslationDao::getById($translationId);

@@ -50,5 +50,14 @@
     $data['translations'] = array_values(TranslationDao::getAll());
     $data['defaultLanguageId'] = LanguageDao::getDefault()->id;
 
+    processData($data);
+
+    ob_start('ob_gzhandler');
     echo Json::encode($data);
+
+    function processData($data) {
+        foreach ($data['translations'] as $translation) {
+            $translation->lastChangedTime = $translation->lastChangedTime->format('c');
+        }
+    }
 ?>

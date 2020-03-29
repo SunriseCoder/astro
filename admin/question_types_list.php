@@ -10,15 +10,16 @@
                    qt.code as code,
                    qt.name as name
               FROM question_types qt';
-    $error = Db::query($sql);
-    if (count($error) > 0) {
+    $result = Db::query($sql);
+    if (count($result) > 0) {
+        // TODO Rewrite using HTMLRender::renderTable(...)
         $body_content .= '<table class="admin-table">';
         $body_content .= '<tr>
                 <th>ID</th>
                 <th>Code</th>
                 <th>Name</th>
               </tr>';
-        foreach ($error as $row) {
+        foreach ($result as $row) {
             $body_content .= '<tr>';
             $body_content .= '<td>'.$row['id'].'</td>';
             $body_content .= '<td>'.$row['code'].'</td>';
@@ -31,3 +32,4 @@
     }
 
     include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';
+?>

@@ -1,12 +1,14 @@
 <?php
     if (!class_exists('Utils')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/utils.php'; }
-    if (LoginDao::isLogged()) {
+    if (!LoginDao::isLogged()) {
         Utils::redirect('/login.php');
     }
 
     if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
     if (!class_exists('Question')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
+    if (!class_exists('ParticipantAnswerGroupDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/answers.php'; }
     if (!class_exists('QuestionRender')) { include $_SERVER["DOCUMENT_ROOT"].'/render/questions.php'; }
+    if (!class_exists('HTMLRender')) { include $_SERVER["DOCUMENT_ROOT"].'/render/html.php'; }
 
     $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
     $page_title = Tr::trs('page.questions.pageTitle', 'Survey');
@@ -15,11 +17,11 @@
     $body_content = '';
 
     // Saving Question Answers
-    $alreadyAnswered = AnswerSessionDao::hasCurrentUserAlreadyAnswered();
+    $alreadyAnswered = ParticipantAnswerGroupDao::hasCurrentUserAlreadyAnswered();
     if ($alreadyAnswered) {
         $body_content .= Tr::trs('page.questions.error.alreadyAnswered', 'Sorry, but you already have taken part in the survey');
     } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $error = AnswerSessionDao::saveAnswers();
+        $error = ParticipantAnswerGroupDao::saveAnswers();
         if ($error) {
             $body_content .= '<font color="red">'.$error.'</font><br />';
         } else {
@@ -31,21 +33,14 @@
         $questionsMap = QuestionDao::getDefaultQuestionnaire();
         if (count($questionsMap) > 0) {
             $body_content .= '<form action="" method="post">';
-            $body_content .= '<table class="questions-table">';
-            $body_content .= '<tr>';
-            $body_content .= '<th class="table-top-left">'.Tr::trs('word.question.numberShort', '#').'</th>';
-            $body_content .= '<th class="table-top-right">'.Tr::trs('word.question.text', 'Text').'</th>';
-            $body_content .= '</tr>';
+            $tableModel = new TableModel();
+            $tableModel->header []= [Tr::trs('word.question.numberShort', '#'), Tr::trs('word.question.text', 'Text')];
             foreach ($questionsMap as $question) {
-                $body_content .= '<tr><td class="table-middle-left">'.$question->number.'</td>';
-                $body_content .= '<td class="table-middle-middle">';
-                $body_content .= QuestionRender::renderQuestion($question);
-                $body_content .= '</td></tr>';
+                $tableModel->data []= [$question->number, QuestionRender::renderQuestion($question)];
             }
-            $body_content .= '<tr><td class="table-bottom-single" colspan="2" align="center">';
-            $body_content .= '<input type="submit" value="'.Tr::trs('word.send', 'Send').'" />';
-            $body_content .= '</td></tr>';
-            $body_content .= '</table>';
+            $submitValue = '<input type="submit" value="'.Tr::trs('word.send', 'Send').'" />';
+            $tableModel->data []= [['colspan' => 2, 'align' => 'center', 'value' => $submitValue]];
+            $body_content .= HTMLRender::renderTable($tableModel, 'questions-table');
             $body_content .= '</form>';
         } else {
             $body_content .= Tr::trs('page.questions.noQuestions', 'No questions');
@@ -53,3 +48,4 @@
     }
 
     include $_SERVER["DOCUMENT_ROOT"].'/templates/page.php';
+?>

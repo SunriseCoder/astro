@@ -7,8 +7,9 @@
     $body_content = '';
 
     $sql = "SELECT id, name, is_active FROM questionnaires";
-    $error = Db::query($sql);
-    if (count($error) > 0) {
+    $result = Db::query($sql);
+    if (count($result) > 0) {
+        // TODO Rewrite using HTMLRender::renderTable(...)
         $body_content .= '<table class="admin-table">';
         $body_content .= '<tr>
                 <th>ID</th>
@@ -16,7 +17,7 @@
                 <th>Status</th>
                 <th>Actions</th>
               </tr>';
-        foreach ($error as $row) {
+        foreach ($result as $row) {
             $body_content .= '<tr>';
             $body_content .= '<td>'.$row['id'].'</td>';
             $body_content .= '<td>'.$row['name'].'</td>';
@@ -34,3 +35,4 @@
     }
 
     include $_SERVER["DOCUMENT_ROOT"].'/admin/templates/page.php';
+?>

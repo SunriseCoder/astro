@@ -19,9 +19,17 @@ function refreshTranslationData() {
 }
 
 function updateTranslationData(data) {
+    postProcessJsonData(data);
     translationData = data;
     updateLanguageFilters();
     renderTranslationTable();
+}
+
+function postProcessJsonData(data) {
+    // Converting translations date strings into real dates
+    data.translations.forEach(function(translation) {
+        translation.lastChangedTime = new Date(translation.lastChangedTime);
+    });
 }
 
 function updateLanguageFilters() {
@@ -89,7 +97,7 @@ function renderTranslationTable() {
     translationsMap = createTranslationsMap(translationData.translations);
 
     var table = createElement('table', translationRoot);
-    table.className = 'admin-table';
+    table.classList.add('admin-table');
     var tr = createElement('tr', table);
 
     // Table Header
@@ -121,6 +129,18 @@ function renderTranslationTable() {
                 element.innerHTML = '<font color="red"><b>Empty</b></font>';
             } else {
                 element = createElementWithText('td', translation.text, tr);
+                var defaultTranslation = keywordMap[translationData.defaultLanguageId];
+                var elementLastChangeData = '';
+                if (language.id != translationData.defaultLanguageId) {
+                    if (translation.lastChangedTime.getTime() < defaultTranslation.lastChangedTime.getTime()) {
+                        translation.outdated = true;
+                        element.classList.add('translation-cell-outdated');
+                    }
+                    elementLastChangeData += 'Default changed: ' + defaultTranslation.lastChangedTime +
+                        '\nDefault changed by: ' + defaultTranslation.lastChangedBy + '\n';
+                }
+                elementLastChangeData += 'Translation changed: ' + translation.lastChangedTime + '\nTranslation changed by: ' + translation.lastChangedBy;
+                element.setAttribute('title', elementLastChangeData);
             }
             element.setAttribute('onclick', 'editTranslation(' + keyword.id + ', ' + language.id + ');');
         }
@@ -145,15 +165,17 @@ function getFilteredLanguages() {
 
 function matchFilters(keyword, keywordMap) {
     var textFilterValue = document.getElementById('textFilter').value;
-    var emptyCellsOnlyFilterValue = document.getElementById('emptyCellsOnlyFilter').checked;
-    var emptyRowsOnlyFilterValue = document.getElementById('emptyRowsOnlyFilter').checked;
+    var emptyCellsFilterValue = document.getElementById('emptyCellsFilter').checked;
+    var emptyRowsFilterValue = document.getElementById('emptyRowsFilter').checked;
+    var outdatedCellsFilterValue = document.getElementById('outdatedCellsFilter').checked;
 
     // If no Languages selected in the Filter, keywords cannot be empty
-    if (emptyRowsOnlyFilterValue && languagesMap.length == 0) {
+    if (emptyRowsFilterValue && languagesMap.length == 0) {
         return false;
     }
 
     var foundEmpty = false;
+    var foundOutdated = false;
     var foundMatch = textFilterValue.length >= 2 && keyword.code.toLowerCase().includes(textFilterValue.toLowerCase());
     for (var i = 0; i < languagesMap.length; i++) {
         var language = languagesMap[i];
@@ -167,8 +189,8 @@ function matchFilters(keyword, keywordMap) {
             // No need to apply any other filters to the empty values
             foundEmpty = true;
             continue;
-        } else if (emptyRowsOnlyFilterValue) {
-            // If any non-empty value found with Empty Rows Only filter, the row doesn't match
+        } else if (emptyRowsFilterValue) {
+            // If any non-empty value found with Empty Rows filter, the row doesn't match
             return false;
         }
 
@@ -176,10 +198,20 @@ function matchFilters(keyword, keywordMap) {
         if (textFilterValue.length >= 2 && translation.text.toLowerCase().includes(textFilterValue.toLowerCase())) {
             foundMatch = true;
         }
+
+        // Outdated Filter
+        if (translation.outdated) {
+            foundOutdated = true;
+        }
     }
 
-    // Empty Cells Only Checkbox
-    if (emptyCellsOnlyFilterValue && !foundEmpty) {
+    // Empty Cells Checkbox
+    if (emptyCellsFilterValue && !foundEmpty) {
+        return false;
+    }
+
+    // Outdated Cells Checkbox
+    if (outdatedCellsFilterValue && !foundOutdated) {
         return false;
     }
 

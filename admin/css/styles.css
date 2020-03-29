@@ -19,7 +19,7 @@ body {
 }
 
 #page-menu-admin td {
-    padding: 2pt 0 2pt 20pt;
+    padding: 2pt 0 2pt 5pt;
 }
 
 #page-menu-admin a {
@@ -57,4 +57,16 @@ body {
 .admin-table td {
     border: solid #E6AB1A 2pt;
     padding: 5pt;
+}
+
+.admin-table a {
+    color: #1652B6;
+}
+
+.admin-table a:hover {
+    color: #E6AB1A;
+}
+
+.translation-cell-outdated {
+    color: red;
 }

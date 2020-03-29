@@ -53,7 +53,11 @@
         if ($files) {
             $tableModel = new TableModel();
             $tableModel->title = $env;
-            $tableModel->header = ['File', 'Size', 'Actions'];
+
+            // Table Header
+            $tableModel->header = [['File', 'Size', 'Actions']];
+
+            // Table Content
             foreach ($files as $file) {
                 $size = NumberUtils::humanReadableSize(filesize($file)).'b';
                 $actions = '<a href="?action=restore&file='.$file.'" onclick="return confirm(\'Are you sure to restore '.$file.'?\');">Restore</a>';
