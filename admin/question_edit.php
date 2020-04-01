@@ -102,6 +102,7 @@
         $body_content .= '<tr>
                 <th>ID</th>
                 <th>Text</th>
+                <th>N/A</th>
                 <th>Position</th>
                 <th>Actions</th>
               </tr>';
@@ -126,6 +127,12 @@
                     $questionOptionTextName = 'question_options['.$questionOptionsCounter.'][text]';
                     $body_content .= '<td><input type="text" name="'.$questionOptionTextName.'" value="'.$questionOptionText.'" size="30" /></td>';
 
+                    // Question Option IsNotApplicable
+                    $questionOptionIsNotApplicableName = 'question_options['.$questionOptionsCounter.'][isNotApplicable]';
+                    $questionOptionIsNotApplicableCheckedAttribute = $questionOption->isNotApplicable ? ' checked="checked"' : '';
+                    $body_content .= '<td><input type="checkbox" name="'.$questionOptionIsNotApplicableName.'"'.
+                        $questionOptionIsNotApplicableCheckedAttribute.' /></td>';
+
                     // Question Option Position
                     $questionOptionPosition = $questionOption->position;
                     $questionOptionPositionName = 'question_options['.$questionOptionsCounter.'][position]';
@@ -139,7 +146,7 @@
             }
         }
 
-        $body_content .= '<tr><td colspan="4"><input type="button" onclick="addAnswerOption();" value="Add Answer Option" /></td></tr>';
+        $body_content .= '<tr><td colspan="5"><input type="button" onclick="addAnswerOption();" value="Add Answer Option" /></td></tr>';
         $body_content .= '</table><br />';
         $body_content .= '<input type="submit" value="Save" />';
         $body_content .= '</form>';

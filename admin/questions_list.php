@@ -30,7 +30,11 @@
             $body_content .= '<td>'.$question->type->name.'</td>';
             $body_content .= '<td>';
             foreach ($question->options as $questionOption) {
-                $body_content .= $questionOption->text.'<br />';
+                $body_content .= $questionOption->text;
+                if ($questionOption->isNotApplicable) {
+                    $body_content .= ' <font color="red">(n/a)</font>';
+                }
+                $body_content .= '<br />';
             }
             $body_content .= '</td>';
             $body_content .= '<td>'.$question->position.'</td>';

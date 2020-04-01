@@ -32,34 +32,47 @@ function createNewRow(row_number) {
     var newRow = document.createElement('tr');
     newRow.setAttribute('row_number', row_number);
 
-    var td1 = document.createElement('td');
-    td1.appendChild(document.createTextNode('New'));
-    newRow.appendChild(td1);
+    // ID (New)
+    var td = document.createElement('td');
+    td.appendChild(document.createTextNode('New'));
+    newRow.appendChild(td);
 
-    var td2 = document.createElement('td');
-    var input2 = document.createElement('input');
-    input2.setAttribute('type', 'text');
-    input2.setAttribute('name', 'question_options[' + row_number + '][text]');
-    input2.setAttribute('size', '30');
-    td2.appendChild(input2);
-    newRow.appendChild(td2);
+    // Text
+    var td = document.createElement('td');
+    var input = document.createElement('input');
+    input.setAttribute('type', 'text');
+    input.setAttribute('name', 'question_options[' + row_number + '][text]');
+    input.setAttribute('size', '30');
+    td.appendChild(input);
+    newRow.appendChild(td);
 
-    var td3 = document.createElement('td');
-    var input3 = document.createElement('input');
-    input3.setAttribute('type', 'text');
-    input3.setAttribute('name', 'question_options[' + row_number + '][position]');
-    input3.setAttribute('size', '4');
-    input3.setAttribute('value', (row_number + 1) * 10);
-    td3.appendChild(input3);
-    newRow.appendChild(td3);
+    // Is Not Applicable
+    var td = document.createElement('td');
+    var input = document.createElement('input');
+    input.setAttribute('type', 'checkbox');
+    input.setAttribute('name', 'question_options[' + row_number + '][isNotApplicable]');
+    input.setAttribute('size', '30');
+    td.appendChild(input);
+    newRow.appendChild(td);
 
-    var td4 = document.createElement('td');
-    var input4 = document.createElement('input');
-    input4.setAttribute('type', 'button');
-    input4.setAttribute('onclick', 'deleteAnswerOption(' + row_number + ');');
-    input4.setAttribute('value', 'Delete');
-    td4.appendChild(input4);
-    newRow.appendChild(td4);
+    // Position
+    var td = document.createElement('td');
+    var input = document.createElement('input');
+    input.setAttribute('type', 'text');
+    input.setAttribute('name', 'question_options[' + row_number + '][position]');
+    input.setAttribute('size', '4');
+    input.setAttribute('value', (row_number + 1) * 10);
+    td.appendChild(input);
+    newRow.appendChild(td);
+
+    // Actions (Delete)
+    var td = document.createElement('td');
+    var input = document.createElement('input');
+    input.setAttribute('type', 'button');
+    input.setAttribute('onclick', 'deleteAnswerOption(' + row_number + ');');
+    input.setAttribute('value', 'Delete');
+    td.appendChild(input);
+    newRow.appendChild(td);
 
     return newRow;
 }

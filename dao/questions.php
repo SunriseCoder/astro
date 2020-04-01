@@ -24,6 +24,7 @@
     class QuestionOption {
         public $id;
         public $questionId;
+        public $isNotApplicable = FALSE;
         public $position;
         public $text;
     }
@@ -64,7 +65,8 @@
                            qt.id as question_type_id,
                            qt.code as question_type_code,
                            qt.name as question_type_name,
-                           qo.id as question_option_id
+                           qo.id as question_option_id,
+                           qo.is_not_applicable as question_option_is_not_applicable
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -85,7 +87,8 @@
                            qt.id as question_type_id,
                            qt.code as question_type_code,
                            qt.name as question_type_name,
-                           qo.id as question_option_id
+                           qo.id as question_option_id,
+                           qo.is_not_applicable as question_option_is_not_applicable
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -106,7 +109,8 @@
                            qt.id as question_type_id,
                            qt.code as question_type_code,
                            qt.name as question_type_name,
-                           qo.id as question_option_id
+                           qo.id as question_option_id,
+                           qo.is_not_applicable as question_option_is_not_applicable
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -126,7 +130,8 @@
                            qt.id as question_type_id,
                            qt.code as question_type_code,
                            qt.name as question_type_name,
-                           qo.id as question_option_id
+                           qo.id as question_option_id,
+                           qo.is_not_applicable as question_option_is_not_applicable
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -147,7 +152,8 @@
                            qt.id as question_type_id,
                            qt.code as question_type_code,
                            qt.name as question_type_name,
-                           qo.id as question_option_id
+                           qo.id as question_option_id,
+                           qo.is_not_applicable as question_option_is_not_applicable
                       FROM questions q
                  LEFT JOIN questionnaires qn on qn.id = q.questionnaire_id
                  LEFT JOIN question_types qt on qt.id = q.question_type_id
@@ -203,6 +209,7 @@
                     $questionOption = new QuestionOption();
 
                     $questionOption->id = $queryRow['question_option_id'];
+                    $questionOption->isNotApplicable = $queryRow['question_option_is_not_applicable'];
                     $questionOption->text = Tr::getQuestionOption($questionOption->id, 'text');
 
                     $question->options[$questionOption->id] = $questionOption;
@@ -334,6 +341,7 @@
         public static function getAll() {
             $sql = 'SELECT qo.id as id,
                            qo.question_id as question_id,
+                           qo.is_not_applicable as is_not_applicable,
                            qo.position as position
                       FROM question_options qo
                   ORDER BY qo.id';
@@ -345,6 +353,7 @@
         public static function getAllForQuestion($questionId) {
             $sql = 'SELECT qo.id as id,
                            qo.question_id as question_id,
+                           qo.is_not_applicable as is_not_applicable,
                            qo.position as position
                       FROM question_options qo
                      WHERE qo.question_id = ?
@@ -357,6 +366,7 @@
         public static function get($id) {
             $sql = 'SELECT qo.id as id,
                            qo.question_id as question_id,
+                           qo.is_not_applicable as is_not_applicable,
                            qo.position as position
                       FROM question_options qo
                      WHERE qo.id = ?';
@@ -371,6 +381,7 @@
                 $option = new QuestionOption();
                 $option->id = $queryRow['id'];
                 $option->questionId = $queryRow['question_id'];
+                $option->isNotApplicable = $queryRow['is_not_applicable'];
                 $option->position = $queryRow['position'];
                 $option->text = Tr::getQuestionOption($option->id, 'text');
                 $options[$option->id] = $option;
@@ -394,6 +405,9 @@
                     $option->questionId = $questionId;
                     $option->position = $position;
                     $option->text = $postElement['text'];
+                    if (!empty($postElement['isNotApplicable'])) {
+                        $option->isNotApplicable = TRUE;
+                    }
 
                     if (isset($postElement['id'])) {
                         // Update existing Question Option
@@ -418,19 +432,20 @@
             }
         }
 
-        public static function update($option) {
+        public static function update(QuestionOption $option) {
             $sql = 'UPDATE question_options
                        SET question_id = ?,
+                           is_not_applicable = ?,
                            position = ?
                      WHERE id = ?';
-            $result = Db::prepStmt($sql, 'iii', [$option->questionId, $option->position, $option->id]);
+            $result = Db::prepStmt($sql, 'iiii', [$option->questionId, $option->isNotApplicable, $option->position, $option->id]);
             TranslationDao::saveQuestionOption($option);
             return $result;
         }
 
-        public static function insert($option) {
-            $sql = 'INSERT INTO question_options (question_id, position) VALUES (?, ?)';
-            $result = Db::prepStmt($sql, 'ii', [$option->questionId, $option->position]);
+        public static function insert(QuestionOption $option) {
+            $sql = 'INSERT INTO question_options (question_id, is_not_applicable, position) VALUES (?, ?, ?)';
+            $result = Db::prepStmt($sql, 'iii', [$option->questionId, $option->isNotApplicable, $option->position]);
             $option->id = Db::insertedId();
             TranslationDao::saveQuestionOption($option);
             return $result;
