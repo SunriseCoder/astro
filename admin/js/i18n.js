@@ -281,7 +281,7 @@ function saveTranslation() {
     var query = '';
     for (var i = 0; i < form.elements.length; i++) {
         var name = form.elements[i].name;
-        var value = form.elements[i].value;
+        var value = encodeURIComponent(form.elements[i].value);
         if (name && value) {
             query += query != '' ? '&' : '';
             query += name + '=' + value;
