@@ -183,7 +183,7 @@
                     $content .= '<script>';
                     $content .= 'var subQuestions = [];';
                     foreach ($subQuestions as $subQuestion) {
-                        $content .= 'var subQuestionStr = \''.Json::encode($subQuestion).'\';';
+                        $content .= 'var subQuestionStr = \''.str_replace('\'', '\\\'', Json::encode($subQuestion)).'\';';
                         $content .= 'var subQuestion = JSON.parse(subQuestionStr);';
                         $content .= 'subQuestions.push(subQuestion);';
                     }
