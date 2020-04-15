@@ -60,6 +60,7 @@
             $dataRow []= $group['participant_answers_count'];
             $dataRow []= $group['astrologer_answers_count'];
             $dataRow []= '<a href="astrologer_answers_view.php?id='.$group['id'].'">View</a>'.
+                ' <a href="astrologer_answers_evaluation.php?id='.$group['id'].'">Evaluate</a>'.
                 ' <a href="astrologer_answers_list.php?action=delete&id='.$group['id'].'"'.
                     ' onclick="return confirm(\'Are you sure to delete Astrologer Answer Group with ID: '.$group['id'].' ?\');">Delete</a>';
             $tableModel->data []= $dataRow;
