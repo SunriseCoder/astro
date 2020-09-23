@@ -1,5 +1,6 @@
 <?php
     if (!class_exists('Language')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/i18n.php'; }
+    if (!class_exists('QuestionDao')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
 
     class Tr {
         // Maps
@@ -39,7 +40,7 @@
                 $translationLanguageMap = isset(self::$translationMapByCodes[$language->code]) ? self::$translationMapByCodes[$language->code] : [];
 
                 $keyword = self::$keywordsById[$translation->keywordId];
-                $translationLanguageMap[$keyword->code] = $translation->text;
+                $translationLanguageMap[$keyword->code] = $translation;
 
                 self::$translationMapByCodes[$language->code] = $translationLanguageMap;
             }
@@ -71,6 +72,23 @@
             if (isset(self::$languagesByCode[$languageCode])) {
                 self::$currentLanguage = self::$languagesByCode[$languageCode];
             }
+        }
+
+        public static function containsNonOutdatedTranslation($keywordCode, $languageCode) {
+            // Checking that the translations exists
+            $result = isset(self::$translationMapByCodes[$languageCode]);
+            if ($result) {
+                $result &= isset(self::$translationMapByCodes[$languageCode][$keywordCode]);
+            }
+
+            // If the $languageCode is not default language, checking that the translation is not outdated
+            if ($result && self::$defaultLanguage->code != $languageCode) {
+                $currentTranslationChangeTime = self::$translationMapByCodes[$languageCode][$keywordCode]->lastChangedTime;
+                $defaultTranslationChangeTime = self::$translationMapByCodes[self::$defaultLanguage->code][$keywordCode]->lastChangedTime;
+                $result &= $currentTranslationChangeTime > $defaultTranslationChangeTime;
+            }
+
+            return $result;
         }
 
         /**
@@ -119,24 +137,36 @@
 
                     $translationId = Db::insertedId();
                     $translation = TranslationDao::getById($translationId);
-                    self::$translationMapByCodes[$language->code][$keyword->code] = $translation->text;
+                    self::$translationMapByCodes[$language->code][$keyword->code] = $translation;
                 }
 
                 $result = $default == NULL ? $keyword->code : $default;
                 return $result;
             }
 
-            // If the Map for the Language exists (i.e. at least one translation into the Language) and it has the keyword translation
-            // Othwerwise use the Map for the Default Language
-            $language = self::$currentLanguage;
-            $languageMap = isset(self::$translationMapByCodes[$language->code]) && isset(self::$translationMapByCodes[$language->code][$keywordCode])
-                ? self::$translationMapByCodes[$language->code] : self::$translationMapByCodes[self::$defaultLanguage->code];
+            $currentLanguage = self::$currentLanguage;
+            $currentLanguageMap = isset(self::$translationMapByCodes[$currentLanguage->code]) ? self::$translationMapByCodes[$currentLanguage->code] : NULL;
+            $currentLanguageTranslation = isset($currentLanguageMap[$keywordCode]) ? $currentLanguageMap[$keywordCode] : NULL;
 
-            // Getting the translation text
-            if (isset($languageMap[$keywordCode])) {
-                $result = $languageMap[$keywordCode];
+            $defaultLanguage = self::$defaultLanguage;
+            $defaultLanguageMap = isset(self::$translationMapByCodes[$defaultLanguage->code]) ? self::$translationMapByCodes[$defaultLanguage->code] : NULL;
+            $defaultLanguageTranslation = isset($defaultLanguageMap[$keywordCode]) ? $defaultLanguageMap[$keywordCode] : NULL;
+
+            // Looking for the Translation in the currently selected Language map
+            if (isset($currentLanguageTranslation) && isset($defaultLanguageTranslation)) {
+                // Checking that the current language translation is not outdated, otherwise returning default language translation
+                $result = $currentLanguageTranslation->lastChangedTime > $defaultLanguageTranslation->lastChangedTime
+                        ? $currentLanguageTranslation->text : $defaultLanguageTranslation->text;
+
+            // If not found - looking in Default Language Map
+            } else if (isset($defaultLanguageMap[$keywordCode])) {
+                $result = $defaultLanguageMap[$keywordCode]->text;
+
+            // If not found - checking the $default came as a parameter
             } else if (!empty($default)) {
                 $result = $default;
+
+            // If none of the attempts were successful, returning the Keyword Code itself
             } else {
                 $result = $keywordCode;
             }
@@ -146,7 +176,7 @@
 
         public static function updateTranslation($translation) {
             $keyword = self::$keywordsById[$translation->keywordId];
-            self::$translationMapByCodes[self::$currentLanguage->code][$keyword->code] = $translation->text;
+            self::$translationMapByCodes[self::$currentLanguage->code][$keyword->code] = $translation;
         }
 
         public static function deleteKeywordById($keywordId) {
@@ -183,6 +213,53 @@
             $keywordCode = $prefix.$questionOptionId.'.'.$property;
             $result = self::trs($keywordCode);
             return $result;
+        }
+    }
+
+    class TrHelper {
+        public static function isSurveyCompletelyTranslated() {
+            $language = Tr::getCurrentLanguage();
+            $result = self::isSurveyCompletelyTranslatedByLanguageCode($language->code);
+            return $result;
+        }
+
+        public static function isSurveyCompletelyTranslatedByLanguageCode($languageCode) {
+            // Checking translation of the Survey instructions, etc...
+            $result = Tr::containsNonOutdatedTranslation('menu.survey', $languageCode);
+            $result &= Tr::containsNonOutdatedTranslation('page.questions.pageTitle', $languageCode);
+            $result &= Tr::containsNonOutdatedTranslation('page.questions.message.successfullyComplete', $languageCode);
+            $result &= Tr::containsNonOutdatedTranslation('page.questions.text.surveyInstructions', $languageCode);
+            $result &= Tr::containsNonOutdatedTranslation('page.questions.incompleteTranslation', $languageCode);
+            if (!$result) {
+                return FALSE;
+            }
+
+            // Checking translation of the questions and the question options
+            $questionMap = QuestionDao::getDefaultQuestionnaire();
+            foreach ($questionMap as $question) {
+                $isQuestionTranslated = FALSE;
+                switch ($question->type) {
+                    case QuestionType::Complex:
+                        $isQuestionTranslated = Tr::containsNonOutdatedTranslation('entities.question.'.$question->id.'.text', $languageCode);
+                        $isQuestionTranslated &= Tr::containsNonOutdatedTranslation('entities.question.'.$question->id.'.markup', $languageCode);
+                        break;
+                    case QuestionType::SingleChoice:
+                    case QuestionType::MultipleChoice:
+                        $isQuestionTranslated = Tr::containsNonOutdatedTranslation('entities.question.'.$question->id.'.text', $languageCode);
+                        foreach ($question->options as $questionOption) {
+                            $isQuestionTranslated &= Tr::containsNonOutdatedTranslation('entities.questionOption.'.$questionOption->id.'.text', $languageCode);
+                        }
+                        break;
+                    default:
+                        $isQuestionTranslated = Tr::containsNonOutdatedTranslation('entities.question.'.$question->id.'.text', $languageCode);
+                        break;
+                }
+                if (!$isQuestionTranslated) {
+                    return FALSE;
+                }
+            }
+
+            return TRUE;
         }
     }
 

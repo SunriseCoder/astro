@@ -17,11 +17,11 @@
         $tableModel->title = 'Translation Statistic';
 
         // Table Header
-        $tableModel->header = [['Language', '24 Hours', '3 Days', '7 Days', '30 Days', 'Outdated', 'Total']];
+        $tableModel->header = [['Language', '24 Hours', '3 Days', '7 Days', '30 Days', 'Outdated', 'Total', 'Survey']];
 
         // Table Content
         function mkCellData($amount, $total) {
-            $value = $amount.'/'.$total.' ('.round(100 * $amount / $total).'%)';
+            $value = $amount.'/'.$total.' ('.floor(100 * $amount / $total).'%)';
             return $value;
         }
         foreach ($statistics as $row) {
@@ -32,7 +32,9 @@
                 mkCellData($row['7days_count'], $keywordsCount),
                 mkCellData($row['30days_count'], $keywordsCount),
                 mkCellData($row['outdated_count'], $keywordsCount),
-                mkCellData($row['total_count'], $keywordsCount)
+                mkCellData($row['total_count'], $keywordsCount),
+                TrHelper::isSurveyCompletelyTranslatedByLanguageCode($row['language_code'])
+                        ? '<font color="green">Complete</font>' : '<font color="red">Incomplete</font>'
             ];
         }
 

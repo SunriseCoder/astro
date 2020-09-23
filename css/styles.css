@@ -208,11 +208,26 @@ p.page-title {
 
 /* Hyperlinks*/
 a {
-    text-decoration: none;
     cursor: pointer;
-    color: black;
 }
 
 a.button {
     padding: 0 10pt 0 10pt;
+    color: black;
+    text-decoration: none;
+}
+
+/* Hyperlink Buttons */
+a.button-in-text {
+    text-decoration: none;
+}
+
+a.button-in-text div {
+    display: table;
+
+    background-color: #1652B6;
+    color: white;
+    border: solid #1652B6;
+    border-radius: 200pt;
+    padding: 10pt;
 }
