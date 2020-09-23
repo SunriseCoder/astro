@@ -242,6 +242,16 @@ function editTranslation(keywordId, languageId) {
     var languageCell = document.getElementById('languageCell');
     createTextElement(language.nameEnglish, languageCell);
 
+    var originalText = '';
+    if (languageId != translationData.defaultLanguageId) {
+        var originalTranslation = translationsMap[keywordId][translationData.defaultLanguageId];
+        if (originalTranslation != null) {
+            originalText = originalTranslation.text;
+        }
+    }
+    var originalTextCell = document.getElementById('originalTextCell');
+    createTextElement(originalText, originalTextCell);
+
     var translationCell = document.getElementById('translationCell');
     if (translation) {
         // Translation into selected Language
@@ -266,6 +276,7 @@ function clearEditForm() {
 
     document.getElementById('keywordCell').innerHTML = '';
     document.getElementById('languageCell').innerHTML = '';
+    document.getElementById('originalTextCell').innerHTML = '';
     document.getElementById('translationCell').value = '';
 
     document.getElementById('editFormSubmit').disabled = true;

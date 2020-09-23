@@ -66,7 +66,17 @@
 
             // Attribute Colspan
             if (is_array($cellData) && isset($cellData['colspan'])) {
-                $thAttributes .= 'colspan="'.$cellData['colspan'].'"';
+                $thAttributes .= (empty($thAttributes) ? '' : ' ').'colspan="'.$cellData['colspan'].'"';
+            }
+
+            // Attribute Rowspan
+            if (is_array($cellData) && isset($cellData['rowspan'])) {
+                $thAttributes .= (empty($thAttributes) ? '' : ' ').'rowspan="'.$cellData['rowspan'].'"';
+            }
+
+            // Attribute Tooltip
+            if (is_array($cellData) && isset($cellData['tooltip'])) {
+                $thAttributes .= (empty($thAttributes) ? '' : ' ').'title="'.$cellData['tooltip'].'"';
             }
 
             // Attribute Class

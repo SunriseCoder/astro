@@ -22,7 +22,8 @@
 
     $browser_title = Tr::trs('page.common.browserTitle', 'Astrology - Chaitanya Academy');
     $page_title = Tr::trs('page.login.pageTitle', 'Login');
-    $body_content = '';
+    $body_content = Tr::trs('page.login.text',
+        'In order to proceed to the survey, you must log-in.<br />If you have not already signed up, please sign-up now.<br /><br />');
 
     if (isset($result)) {
         $body_content = '<font color="red">'.$result.'</font><br /><br />';

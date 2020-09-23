@@ -23,6 +23,10 @@
                                 <td id="languageCell"></td>
                             </tr>
                             <tr>
+                                <td>Original text</td>
+                                <td id="originalTextCell"></td>
+                            </tr>
+                            <tr>
                                 <td>Translation</td>
                                 <td>
                                     <textarea id="translationCell" name="text" rows="10" cols="100"></textarea>

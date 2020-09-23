@@ -439,6 +439,13 @@
             return $result;
         }
 
+        public static function getAll() {
+            $sql = 'SELECT * FROM astrologer_answer_groups ORDER BY id';
+            $queryResult = Db::prepQuery($sql, 'i', [$id]);
+            $result = self::fetchAll($queryResult);
+            return $result;
+        }
+
         public static function get($id) {
             $sql = 'SELECT * FROM astrologer_answer_groups WHERE id = ?';
             $queryResult = Db::prepQuery($sql, 'i', [$id]);

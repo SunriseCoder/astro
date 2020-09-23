@@ -188,6 +188,7 @@
 
         public static function getStatisticMapByLanguageIds() {
             $sql = 'SELECT l.id as language_id,
+                           l.code as language_code,
                            l.name_english as language_name,
                            COALESCE(1d.c, 0) as 1day_count,
                            COALESCE(3d.c, 0) as 3days_count,
@@ -281,7 +282,7 @@
         public static function insertAsDefaultUser($translation) {
             $translation->text = trim($translation->text);
             $sql = 'INSERT INTO i18n_translations (keyword_id, language_id, text, last_changed_time, last_changed_by_id)'
-                .' VALUES (?, ?, ?, ?, SELECT value FROM settings WHERE code = \''.Settings::DEFAULT_TRANSLATION_USER_ID.'\')';
+                .' VALUES (?, ?, ?, ?, (SELECT value FROM settings WHERE code = \''.Settings::DEFAULT_TRANSLATION_USER_ID.'\'))';
             $changeTime = DateTimeUtils::toDatabase(DateTimeUtils::now());
             $result = Db::prepStmt($sql, 'iiss', [$translation->keywordId, $translation->languageId, $translation->text, $changeTime]);
             return $result;

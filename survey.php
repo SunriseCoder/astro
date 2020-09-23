@@ -28,22 +28,26 @@
             $body_content .= Tr::trs('page.questions.message.successfullyComplete', 'Thank you for participating in the survey');
         }
     } else {
-        $body_content .= Tr::trs('page.questions.text.surveyInstructions');
+        if (TrHelper::isSurveyCompletelyTranslated()) {
+            $body_content .= Tr::trs('page.questions.text.surveyInstructions');
 
-        $questionsMap = QuestionDao::getDefaultQuestionnaire();
-        if (count($questionsMap) > 0) {
-            $body_content .= '<form action="" method="post">';
-            $tableModel = new TableModel();
-            $tableModel->header []= [Tr::trs('word.question.numberShort', '#'), Tr::trs('word.question.text', 'Text')];
-            foreach ($questionsMap as $question) {
-                $tableModel->data []= [$question->number, QuestionRender::renderQuestion($question)];
+            $questionsMap = QuestionDao::getDefaultQuestionnaire();
+            if (count($questionsMap) > 0) {
+                $body_content .= '<form action="" method="post">';
+                $tableModel = new TableModel();
+                $tableModel->header []= [Tr::trs('word.question.numberShort', '#'), Tr::trs('word.question.text', 'Text')];
+                foreach ($questionsMap as $question) {
+                    $tableModel->data []= [$question->number, QuestionRender::renderQuestion($question)];
+                }
+                $submitValue = '<input type="submit" value="'.Tr::trs('word.send', 'Send').'" />';
+                $tableModel->data []= [['colspan' => 2, 'align' => 'center', 'value' => $submitValue]];
+                $body_content .= HTMLRender::renderTable($tableModel, 'questions-table');
+                $body_content .= '</form>';
+            } else {
+                $body_content .= Tr::trs('page.questions.noQuestions', 'No questions');
             }
-            $submitValue = '<input type="submit" value="'.Tr::trs('word.send', 'Send').'" />';
-            $tableModel->data []= [['colspan' => 2, 'align' => 'center', 'value' => $submitValue]];
-            $body_content .= HTMLRender::renderTable($tableModel, 'questions-table');
-            $body_content .= '</form>';
         } else {
-            $body_content .= Tr::trs('page.questions.noQuestions', 'No questions');
+            $body_content .= Tr::trs('page.questions.incompleteTranslation', 'The survey is not completely translated into the current language');
         }
     }
 
