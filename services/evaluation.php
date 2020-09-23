@@ -1,6 +1,8 @@
 <?php
     if (!class_exists('Question')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/questions.php'; }
     if (!class_exists('ParticipantAnswer')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/answers.php'; }
+    if (!class_exists('AnswerEvaluationMethodEntity')) { include $_SERVER["DOCUMENT_ROOT"].'/dao/evaluation.php'; }
+    if (!class_exists('Tr')) { include $_SERVER["DOCUMENT_ROOT"].'/utils/i18n.php'; }
 
     interface AnswerEvaluationMethod {
         public function getName();
@@ -123,19 +125,94 @@
 
     class AnswerEvaluationService {
         private static $evaluators = [];
+        private static $evaluatorsMap = [];
 
         private static function initIfNeeded() {
             if (count(self::$evaluators) > 0) {
                 return;
             }
 
+            // Definition of Evaluators
             self::$evaluators []= new AnswerEvaluator(
                 new LinearRangeEvaluationMethod('Flex-Soft', [2 => [100], 3 => [100, 30], 4 => [100, 50], 5 => [100, 60, 30], 6 => [100, 60, 30]], TRUE));
+
+            // Evaluators map by code
+            foreach (self::$evaluators as $evaluator) {
+                self::$evaluatorsMap[$evaluator->code] = $evaluator;
+            }
         }
 
         public static function getAllEvaluators() {
             self::initIfNeeded();
             return self::$evaluators;
         }
+
+        public static function getEvaluatorByCode($code) : AnswerEvaluator {
+            if (isset(self::$evaluatorsMap[$code])) {
+                return self::$evaluatorsMap[$code];
+            }
+        }
+
+        public static function evaluateAllMissing() {
+            $evaluationMethodEntities = AnswerEvaluationMethodDao::getAll();
+            $astrologerAnswerGroups = AstrologerAnswerGroupDao::getAll();
+
+            $evaluationGroupEntities = AnswerEvaluationGroupDao::getAll();
+            $evaluationGroupEntitiesMap = [];
+            foreach ($evaluationGroupEntities as $evaluationGroupEntity) {
+                $evaluationGroupEntitiesMap[$evaluationGroupEntity->methodId][$evaluationGroupEntity->astrologerAnswerGroupId] = $evaluationGroupEntity;
+            }
+
+            foreach ($astrologerAnswerGroups as $astrologerAnswerGroup) {
+                foreach ($evaluationMethodEntities as $evaluationMethodEntity) {
+                    if (empty($evaluationGroupEntitiesMap[$evaluationMethodEntity->id][$astrologerAnswerGroup->id])) {
+                        $result = self::evaluateAnswerGroup($astrologerAnswerGroup->id, $evaluationMethodEntity);
+                        if ($result) {
+                            return $result;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static function evaluateAnswerGroup($astrologerAnswerGroupId, AnswerEvaluationMethodEntity $evaluationMethodEntity) {
+            $evaluator = self::getEvaluatorByCode($evaluationMethodEntity->code);
+            if (empty($evaluator)) {
+                return Tr::format('evaluationService.error.evaluatorByCodeNotFound', [$evaluationMethodEntity->code],
+                    'Error: Astrologer answers evaluator was not found by code "{0}"');
+            }
+            $evaluator->reset();
+
+            $astrologerAnswerGroup = AstrologerAnswerGroupDao::getWithAllAnswers($astrologerAnswerGroupId);
+            $participantAnswerGroup = ParticipantAnswerGroupDao::getWithAllAnswers($astrologerAnswerGroup->participantAnswerGroupId);
+            $questions = QuestionDao::getAllForQuestionnaire($participantAnswerGroup->questionnaireId);
+
+            Db::beginTransaction();
+
+            // Insert Evaluation Group
+            $evaluationGroup = new AnswerEvaluationGroupEntity();
+            $evaluationGroup->method = $evaluationMethodEntity;
+            $evaluationGroup->astrologerAnswerGroup = $astrologerAnswerGroup;
+            $evaluationGroup->score = 0;
+            AnswerEvaluationGroupDao::insert($evaluationGroup);
+            $evaluationGroup->id = Db::insertedId();
+
+            // TODO Insert Evaluation Details
+            foreach ($questions as $question) {
+                $score = $evaluator->evaluateAnswer($question, $participantAnswer, $astrologerAnswer);
+                if ($score !== FALSE) {
+                    $evaluationDetails = new AnswerEvaluationDetailsEntity();
+                    $evaluationDetails->evaluationGroup = $evaluationGroup;
+                    $evaluationDetails->score = $score;
+                    AnswerEvaluationDetailsDao::insert($evaluationDetails);
+                }
+            }
+
+            // TODO Update Evaluation Group Score
+            $evaluationGroup->score = $evaluator->getAverageScore();
+            AnswerEvaluationGroupDao::update($evaluationGroup);
+            Db::commit();
+        }
     }
 ?>
+
