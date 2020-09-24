@@ -28,11 +28,14 @@
                    u.name as user_name,
                    pag.ip_address as ip_address,
                    pag.date as date,
+                   pag.survey_language_id as survey_language_id,
+                   sl.name_english as survey_language_name_english,
                    COALESCE(pac.participant_answers_count, 0) as participant_answers_count,
                    COALESCE(aagc.astrologer_answer_groups_count, 0) as astrologer_answer_groups_count
               FROM participant_answer_groups pag
          LEFT JOIN users u on u.id = pag.user_id
          LEFT JOIN questionnaires qn on qn.id = pag.questionnaire_id
+         LEFT JOIN i18n_languages sl on sl.id = pag.survey_language_id
          LEFT JOIN (SELECT group_id,
                            COUNT(1) as participant_answers_count
                       FROM participant_answers
@@ -47,7 +50,7 @@
         $tableModel = new TableModel();
 
         // Table Header
-        $tableModel->header = [['ID', 'Questionnaire', 'User', 'IP Address', 'Date', 'Participant Answers', 'Astrologer Answer Groups', 'Actions']];
+        $tableModel->header = [['ID', 'Questionnaire', 'User', 'IP Address', 'Date', 'Language', 'Participant Answers', 'Astrologer Answer Groups', 'Actions']];
 
         // Table Content
         foreach ($groups as $group) {
@@ -57,7 +60,8 @@
                     onclick="return confirm(\'Are you sure to delete Participant Answer Group with ID: '.$group['id'].' ?\');">Delete</a>';
             }
             $tableModel->data []= [$group['id'], $group['questionnaire_id'].': '.$group['questionnaire_name'], $group['user_id'].': '.$group['user_name'],
-                $group['ip_address'], $group['date'], $group['participant_answers_count'], $group['astrologer_answer_groups_count'], $actions];
+                $group['ip_address'], $group['date'], $group['survey_language_id'].': '.$group['survey_language_name_english'],
+                $group['participant_answers_count'], $group['astrologer_answer_groups_count'], $actions];
         }
 
         $body_content .= HTMLRender::renderTable($tableModel, 'admin-table');

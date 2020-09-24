@@ -35,6 +35,7 @@
         public $questionnaire;
         public $ipAddress;
         public $date;
+        public $surveyLanguageId;
         public $answers = [];
         public $answersCount;
         public $astrologyAnswerGroupCount;
@@ -248,6 +249,7 @@
                 $answerGroup->user = LoginDao::getCurrentUser();
                 $answerGroup->ipAddress = LoginDao::clientIP();
                 $answerGroup->date = DateTimeUtils::toDatabase(DateTimeUtils::now());
+                $answerGroup->surveyLanguageId = Tr::getCurrentLanguage()->id;
                 $answerGroup->id = self::insert($answerGroup);
 
                 // Save each Answer
@@ -371,9 +373,9 @@
         }
 
         private static function insert(ParticipantAnswerGroup $group) {
-            $sql = 'INSERT INTO participant_answer_groups (user_id, questionnaire_id, ip_address, date)
-                         VALUES (?, (SELECT value FROM settings WHERE code = \'DEFAULT_QUESTIONNAIRE\'), ?, ?)';
-            Db::prepStmt($sql, 'iss', [$group->user->id, $group->ipAddress, $group->date]);
+            $sql = 'INSERT INTO participant_answer_groups (user_id, questionnaire_id, ip_address, date, survey_language_id)
+                         VALUES (?, (SELECT value FROM settings WHERE code = \'DEFAULT_QUESTIONNAIRE\'), ?, ?, ?)';
+            Db::prepStmt($sql, 'issi', [$group->user->id, $group->ipAddress, $group->date, $group->surveyLanguageId]);
             $groupId = Db::insertedId();
             return $groupId;
         }
